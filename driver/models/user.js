@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const validatePhone = require('../utils/validatePhone')
+const validatePhone = require('../../utils/validatePhone')
 var AutoIncrement = require('mongoose-sequence')(mongoose);
 
-const userSchema = mongoose.Schema({
-    user_id: {
+const driver_Schema = mongoose.Schema({
+    driver_id: {
         type: Number,
         required: false,
     },
@@ -20,10 +20,25 @@ const userSchema = mongoose.Schema({
             }
         }
     },
-    password: {
-        type: String,
+    is_active: {
+        type: Boolean,
+        required: false,
+        default: false
+    },
+    join_date: {
+        type: Number,
         required: true,
-        minLength: 7
+    },
+    avatar: {
+        type: String,
+        required: false,
+        default: ""
+    },
+    point: {
+        type: Number,
+        required: false,
+        default: 0
+
     },
     tokens: [{
         token: {
@@ -32,18 +47,11 @@ const userSchema = mongoose.Schema({
         }
     }]
 })
-userSchema.plugin(AutoIncrement, { id: 'user_seq', inc_field: 'user_id' })
+driver_Schema.plugin(AutoIncrement, { id: 'driver_seq', inc_field: 'driver_id' })
 
-userSchema.pre('save', async function (next) {
-    // Hash the password before saving the user model
-    const user = this
-    if (user.isModified('password')) {
-        user.password = await bcrypt.hash(user.password, 8)
-    }
-    next()
-})
 
-userSchema.methods.generateAuthToken = async function () {
+
+driver_Schema.methods.generateAuthToken = async function () {
     // Generate an auth token for the user
     const user = this
     const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY)
@@ -52,19 +60,16 @@ userSchema.methods.generateAuthToken = async function () {
     return token
 }
 
-userSchema.statics.findByCredentials = async (phone, password) => {
+driver_Schema.statics.findByCredentials = async (phone) => {
     // Search for a user by email and password.
-    const user = await User.findOne({ phone })
+    const user = await Driver.findOne({ phone })
     if (!user) {
         return null;
     }
-    const isPasswordMatch = await bcrypt.compare(password, user.password)
-    if (!isPasswordMatch) {
-        return 'WRONG PASS'
-    }
+   
     return user
 }
 
-const User = mongoose.model('User', userSchema)
+const Driver = mongoose.model('User', driver_Schema)
 
-module.exports = User
+module.exports = Driver

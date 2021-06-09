@@ -1,5 +1,5 @@
 const express = require('express')
-const userRouter = require('./routers/user')
+const userRouter = require('./customer/routers/user')
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require("swagger-jsdoc")
 const port = process.env.PORT
