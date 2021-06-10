@@ -10,6 +10,10 @@ const customer_Schema = mongoose.Schema({
         type: Number,
         required: true,
     },
+    driver_id: {
+        type: Number,
+        required: true,
+    },
     from: {
         lat: {
             type: Number,
@@ -46,6 +50,11 @@ const customer_Schema = mongoose.Schema({
         type: String,
         required: true,
     },
+    price: {
+        type: Number,
+        required: true,
+    },
+
 
 })
 customer_Schema.plugin(AutoIncrement, { id: 'booking_seq', inc_field: 'booking_id' })

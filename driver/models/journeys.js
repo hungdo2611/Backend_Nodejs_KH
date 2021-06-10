@@ -11,6 +11,9 @@ const journeys_Schema = mongoose.Schema({
         type: Number,
         required: false,
     },
+    lst_cus_id: [{
+        type: Number
+    }],
     from: {
         lat: {
             type: Number,
