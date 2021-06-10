@@ -7,6 +7,10 @@ const journeys_Schema = mongoose.Schema({
         type: Number,
         required: false,
     },
+    driver_id: {
+        type: Number,
+        required: false,
+    },
     from: {
         lat: {
             type: Number,
@@ -45,8 +49,50 @@ const journeys_Schema = mongoose.Schema({
     },
     empty_seat: {
         type: Number,
-        
-    }
+        required: true
+    },
+    time_start: {
+        type: Number,
+        required: true
+    },
+    time_end: {
+        type: Number,
+        required: true
+    },
+    price: [{
+        from: {
+            lat: {
+                type: Number,
+                required: true,
+            },
+            lng: {
+                type: Number,
+                required: true
+            },
+            address: {
+                type: String,
+                required: true
+            }
+        },
+        to: {
+            lat: {
+                type: Number,
+                required: true,
+            },
+            lng: {
+                type: Number,
+                required: true
+            },
+            address: {
+                type: String,
+                required: true
+            }
+        },
+        price: {
+            type: Number,
+            required: true
+        }
+    }]
 
 })
 
