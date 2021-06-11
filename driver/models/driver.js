@@ -54,7 +54,7 @@ driver_Schema.plugin(AutoIncrement, { id: 'driver_seq', inc_field: 'driver_id' }
 driver_Schema.methods.generateAuthToken = async function () {
     // Generate an auth token for the user
     const user = this
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY)
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY_DRIVER)
     user.tokens = user.tokens.concat({ token })
     await user.save()
     return token
@@ -66,10 +66,9 @@ driver_Schema.statics.findByCredentials = async (phone) => {
     if (!user) {
         return null;
     }
-   
+
     return user
 }
-
-const Driver = mongoose.model('User', driver_Schema)
+const Driver = mongoose.model('driver_schema', driver_Schema)
 
 module.exports = Driver

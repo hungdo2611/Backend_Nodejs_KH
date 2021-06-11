@@ -2,7 +2,7 @@ const express = require('express')
 const Customer = require('../models/User')
 const auth = require('../middleware/auth')
 
-const router = express.Router()
+const customer_router = express.Router()
 
 
 
@@ -21,7 +21,7 @@ const router = express.Router()
 
 
 //register api
-router.post('/users/register', async (req, res) => {
+customer_router.post('/users/register', async (req, res) => {
     // Create a new user
     try {
         const body = {
@@ -40,7 +40,7 @@ router.post('/users/register', async (req, res) => {
     }
 })
 //login api
-router.post('/users/login', async (req, res) => {
+customer_router.post('/users/login', async (req, res) => {
     //Login a registered user
     try {
         const { phone } = req.body
@@ -56,7 +56,7 @@ router.post('/users/login', async (req, res) => {
     }
 })
 //logout api
-router.post('/users/me/logout', auth, async (req, res) => {
+customer_router.post('/users/me/logout', auth, async (req, res) => {
     // Log user out of the application
     try {
         req.user.tokens = req.user.tokens.filter((token) => {
@@ -69,7 +69,7 @@ router.post('/users/me/logout', auth, async (req, res) => {
     }
 })
 //logout all
-router.post('/users/me/logoutall', auth, async (req, res) => {
+customer_router.post('/users/me/logoutall', auth, async (req, res) => {
     // Log user out of all devices
     try {
         req.user.tokens.splice(0, req.user.tokens.length)
@@ -80,4 +80,4 @@ router.post('/users/me/logoutall', auth, async (req, res) => {
     }
 })
 
-module.exports = router;
+module.exports = customer_router;

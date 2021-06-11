@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const Driver = require('../models/user')
+const Driver = require('../models/driver')
 
 const auth = async (req, res, next) => {
 

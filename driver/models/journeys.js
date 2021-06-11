@@ -102,6 +102,6 @@ const journeys_Schema = mongoose.Schema({
 journeys_Schema.plugin(AutoIncrement, { id: 'journeys_seq', inc_field: 'journey_id' })
 
 
-const Journeys = mongoose.model('User', journeys_Schema)
+const Journeys = mongoose.model('journeys', journeys_Schema)
 
 module.exports = Journeys

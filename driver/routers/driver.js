@@ -1,8 +1,8 @@
 const express = require('express')
-const Customer = require('../models/User')
+const Driver = require('../models/driver')
 const auth = require('../middleware/auth')
 
-const router = express.Router()
+const driver_router = express.Router()
 
 
 
@@ -21,7 +21,7 @@ const router = express.Router()
 
 
 //register api
-router.post('/users/register', async (req, res) => {
+driver_router.post('/driver/register', async (req, res) => {
     // Create a new user
     try {
         const body = {
@@ -29,7 +29,7 @@ router.post('/users/register', async (req, res) => {
             join_date: Date.now(),
 
         }
-        const user = new Customer(body)
+        const user = new Driver(body)
         console.log("user", req.body)
         await user.save()
         const token = await user.generateAuthToken()
@@ -40,12 +40,12 @@ router.post('/users/register', async (req, res) => {
     }
 })
 //login api
-router.post('/users/login', async (req, res) => {
+driver_router.post('/driver/login', async (req, res) => {
     //Login a registered user
     try {
         const { phone } = req.body
 
-        const user = await Customer.findByCredentials(phone)
+        const user = await Driver.findByCredentials(phone)
         if (!user) {
             return res.status(401).send({ err: true, data: "user not found" })
         }
@@ -56,7 +56,7 @@ router.post('/users/login', async (req, res) => {
     }
 })
 //logout api
-router.post('/users/me/logout', auth, async (req, res) => {
+driver_router.post('/driver/me/logout', auth, async (req, res) => {
     // Log user out of the application
     try {
         req.user.tokens = req.user.tokens.filter((token) => {
@@ -69,7 +69,7 @@ router.post('/users/me/logout', auth, async (req, res) => {
     }
 })
 //logout all
-router.post('/users/me/logoutall', auth, async (req, res) => {
+driver_router.post('/driver/me/logoutall', auth, async (req, res) => {
     // Log user out of all devices
     try {
         req.user.tokens.splice(0, req.user.tokens.length)
@@ -80,4 +80,4 @@ router.post('/users/me/logoutall', auth, async (req, res) => {
     }
 })
 
-module.exports = router;
+module.exports = driver_router;

@@ -2,12 +2,12 @@ const express = require('express')
 const Journeys = require('../models/journeys')
 const auth = require('../middleware/auth')
 
-const router = express.Router()
+const Journey_router = express.Router()
 
 
 
 //register api
-router.post('/journey/create', auth, async (req, res) => {
+Journey_router.post('/journey/create', auth, async (req, res) => {
     // Create journey
     try {
         const body = {
@@ -66,4 +66,4 @@ router.post('/journey/create', auth, async (req, res) => {
 
 
 
-module.exports = router;
+module.exports = Journey_router;

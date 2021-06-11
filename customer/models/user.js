@@ -64,7 +64,7 @@ customer_Schema.plugin(AutoIncrement, { id: 'customer_seq', inc_field: 'cus_id' 
 customer_Schema.methods.generateAuthToken = async function () {
     // Generate an auth token for the user
     const user = this
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY)
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY_CUSTOMER)
     user.tokens = user.tokens.concat({ token })
     await user.save()
     return token
@@ -80,6 +80,6 @@ customer_Schema.statics.findByCredentials = async (phone) => {
     return user
 }
 
-const Customer = mongoose.model('User', customer_Schema)
+const Customer = mongoose.model('Customer', customer_Schema)
 
 module.exports = Customer
