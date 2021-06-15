@@ -26,6 +26,10 @@ const journeys_Schema = mongoose.Schema({
         address: {
             type: String,
             required: true
+        },
+        province: {
+            type: String,
+            required: true
         }
     },
     to: {
@@ -38,6 +42,10 @@ const journeys_Schema = mongoose.Schema({
             required: true
         },
         address: {
+            type: String,
+            required: true
+        },
+        province: {
             type: String,
             required: true
         }
@@ -92,6 +100,32 @@ const journeys_Schema = mongoose.Schema({
             }
         },
         price: {
+            type: Number,
+            required: true
+        }
+    }],
+    routes: [{
+        start_loc: {
+            lat: {
+                type: Number,
+                required: true,
+            },
+            lng: {
+                type: Number,
+                required: true
+            },
+        },
+        end_loc: {
+            lat: {
+                type: Number,
+                required: true,
+            },
+            lng: {
+                type: Number,
+                required: true
+            },
+        },
+        distance: {
             type: Number,
             required: true
         }

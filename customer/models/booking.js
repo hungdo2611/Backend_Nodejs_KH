@@ -12,7 +12,7 @@ const booking_Schema = mongoose.Schema({
     },
     driver_id: {
         type: Number,
-        required: true,
+        required: false,
     },
     from: {
         lat: {
@@ -24,6 +24,10 @@ const booking_Schema = mongoose.Schema({
             required: true
         },
         address: {
+            type: String,
+            required: true
+        },
+        province: {
             type: String,
             required: true
         }
@@ -40,6 +44,10 @@ const booking_Schema = mongoose.Schema({
         address: {
             type: String,
             required: true
+        },
+        province: {
+            type: String,
+            required: true
         }
     },
     distance: {
@@ -52,8 +60,9 @@ const booking_Schema = mongoose.Schema({
     },
     price: {
         type: Number,
-        required: true,
+        required: false,
     },
+
 
 
 })
@@ -62,7 +71,7 @@ booking_Schema.plugin(AutoIncrement, { id: 'booking_seq', inc_field: 'booking_id
 
 
 booking_Schema.methods.generateAuthToken = async function () {
-    
+
 }
 
 booking_Schema.statics.findByCredentials = async (phone) => {
