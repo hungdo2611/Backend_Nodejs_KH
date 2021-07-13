@@ -15,40 +15,24 @@ const journeys_Schema = mongoose.Schema({
         type: Number
     }],
     from: {
-        lat: {
-            type: Number,
-            required: true,
-        },
-        lng: {
-            type: Number,
-            required: true
+        loc: {
+            type: { type: String },
+            coordinates: []
         },
         address: {
             type: String,
             required: true
         },
-        province: {
-            type: String,
-            required: true
-        }
     },
     to: {
-        lat: {
-            type: Number,
-            required: true,
-        },
-        lng: {
-            type: Number,
-            required: true
+        loc: {
+            type: { type: String },
+            coordinates: []
         },
         address: {
             type: String,
             required: true
         },
-        province: {
-            type: String,
-            required: true
-        }
     },
     distance: {
         type: Number,
@@ -71,59 +55,15 @@ const journeys_Schema = mongoose.Schema({
         required: true
     },
     price: [{
-        from: {
-            lat: {
-                type: Number,
-                required: true,
-            },
-            lng: {
-                type: Number,
-                required: true
-            },
-            address: {
-                type: String,
-                required: true
-            }
+        loc: {
+            type: { type: String },
+            coordinates: []
         },
-        to: {
-            lat: {
-                type: Number,
-                required: true,
-            },
-            lng: {
-                type: Number,
-                required: true
-            },
-            address: {
-                type: String,
-                required: true
-            }
-        },
-        price: {
-            type: Number,
-            required: true
-        }
     }],
     routes: [{
-        start_loc: {
-            lat: {
-                type: Number,
-                required: true,
-            },
-            lng: {
-                type: Number,
-                required: true
-            },
-        },
-        end_loc: {
-            lat: {
-                type: Number,
-                required: true,
-            },
-            lng: {
-                type: Number,
-                required: true
-            },
+        loc: {
+            type: { type: String },
+            coordinates: []
         },
         distance: {
             type: Number,

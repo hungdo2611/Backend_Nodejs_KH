@@ -15,40 +15,24 @@ const booking_Schema = mongoose.Schema({
         required: false,
     },
     from: {
-        lat: {
-            type: Number,
-            required: true,
-        },
-        lng: {
-            type: Number,
-            required: true
+        loc: {
+            type: { type: String },
+            coordinates: []
         },
         address: {
             type: String,
             required: true
         },
-        province: {
-            type: String,
-            required: true
-        }
     },
     to: {
-        lat: {
-            type: Number,
-            required: true,
-        },
-        lng: {
-            type: Number,
-            required: true
+        loc: {
+            type: { type: String },
+            coordinates: []
         },
         address: {
             type: String,
             required: true
         },
-        province: {
-            type: String,
-            required: true
-        }
     },
     distance: {
         type: Number,
