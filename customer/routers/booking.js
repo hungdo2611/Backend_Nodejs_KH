@@ -44,36 +44,50 @@ function getMinDistance(origin, route) {
 routerBooking.post('/booking/create', auth, async (req, res) => {
     // Create a new user
     try {
-
+        console.log('req user', req.user)
         const body_booking = {
             cus_id: 2,
+            cus_id: req.user.cus_id,
             from: {
-                lat: 21.09085279760941,
-                lng: 105.78847279687488,
+                "loc": {
+                    "type": "Point",
+                    "coordinates": [105.78012826505697, 21.153397515851392]
+                },
                 address: "Pham van dong",
-                province: 'HN'
             },
             to: {
-                lat: 21.306707419857357,
-                lng: 105.61272817310709,
+                "loc": {
+                    "type": "Point",
+                    "coordinates": [105.61272817310709, 21.306707419857357]
+                },
                 address: "Quảng trường HCM",
-                province: 'VP'
             },
             distance: 36300,
             status: 'FINDING',
 
         };
+        const dataJourney = await Journeys.find({
+            routes: {
+                $nearSphere: {
+                    $geometry: {
+                        type: "Point",
+                        coordinates: body_booking.from.loc.coordinates
+                    },
+                    $maxDistance: 2000
+                }
+            }
+        });
+        console.log('dataJourney', dataJourney)
+        // Journeys.find({ 'to.province': 'VP' }, (err, data) => {
+        //     data.forEach(journey => {
 
-        Journeys.find({ 'to.province': 'VP' }, (err, data) => {
-            data.forEach(journey => {
-
-                let minDistance = getMinDistance({ latitude: body_booking.from.lat, longitude: body_booking.from.lng }, journey.routes)
-                console.log('minDistance', minDistance)
-            })
-        })
+        //         let minDistance = getMinDistance({ latitude: body_booking.from.lat, longitude: body_booking.from.lng }, journey.routes)
+        //         console.log('minDistance', minDistance)
+        //     })
+        // })
         // const booking = new Booking(body_booking);
         // await booking.save();
-        res.status(201).send({ err: false, data: 'Success' });
+        res.status(201).send({ err: false, data: dataJourney });
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)

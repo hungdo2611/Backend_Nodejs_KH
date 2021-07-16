@@ -7,13 +7,14 @@ const Journey_router = express.Router()
 function convertData(data) {
     const arr = data.response.route[0].leg[0].maneuver
     let route = arr.map(vl => {
-        return {
-            distance: vl.length,
-            "loc": {
-                "type": "Point",
-                "coordinates": [vl.position.longitude, vl.position.latitude]
-            },
-        }
+        return [vl.position.longitude, vl.position.latitude]
+        // return {
+        //     distance: vl.length,
+        //     "loc": {
+        //         "type": "LineString",
+        //         "coordinates": [vl.position.longitude, vl.position.latitude]
+        //     },
+        // }
     })
     return route
 }
@@ -27,7 +28,7 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
         let newRoutes = convertData({
             "response": {
                 "metaInfo": {
-                    "timestamp": "2021-07-13T10:45:26Z",
+                    "timestamp": "2021-07-14T02:46:12Z",
                     "mapVersion": "8.30.122.152",
                     "moduleVersion": "7.2.202128-9109",
                     "interfaceVersion": "2.6.76",
@@ -39,39 +40,39 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
                     {
                         "waypoint": [
                             {
-                                "linkId": "+1155531865",
+                                "linkId": "-1162676738",
                                 "mappedPosition": {
-                                    "latitude": 21.2475946,
-                                    "longitude": 105.6674832
+                                    "latitude": 21.0258631,
+                                    "longitude": 105.7786121
                                 },
                                 "originalPosition": {
-                                    "latitude": 21.2476272,
-                                    "longitude": 105.667428
+                                    "latitude": 21.0260498,
+                                    "longitude": 105.7773815
                                 },
                                 "type": "stopOver",
-                                "spot": 0.6976744,
-                                "sideOfStreet": "left",
-                                "mappedRoadName": "",
-                                "label": "",
+                                "spot": 0.2317597,
+                                "sideOfStreet": "neither",
+                                "mappedRoadName": "Đường Phạm Hùng",
+                                "label": "Đường Phạm Hùng",
                                 "shapeIndex": 0,
                                 "source": "user"
                             },
                             {
-                                "linkId": "-1156729765",
+                                "linkId": "-1228600042",
                                 "mappedPosition": {
-                                    "latitude": 21.1956962,
-                                    "longitude": 105.5704482
+                                    "latitude": 21.2933169,
+                                    "longitude": 105.6307989
                                 },
                                 "originalPosition": {
-                                    "latitude": 21.1961168,
-                                    "longitude": 105.5704323
+                                    "latitude": 21.2930758,
+                                    "longitude": 105.6297528
                                 },
                                 "type": "stopOver",
-                                "spot": 0.2720588,
-                                "sideOfStreet": "right",
+                                "spot": 0.8899083,
+                                "sideOfStreet": "neither",
                                 "mappedRoadName": "",
-                                "label": "",
-                                "shapeIndex": 199,
+                                "label": "AH14",
+                                "shapeIndex": 358,
                                 "source": "user"
                             }
                         ],
@@ -86,251 +87,300 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
                         "leg": [
                             {
                                 "start": {
-                                    "linkId": "+1155531865",
+                                    "linkId": "-1162676738",
                                     "mappedPosition": {
-                                        "latitude": 21.2475946,
-                                        "longitude": 105.6674832
+                                        "latitude": 21.0258631,
+                                        "longitude": 105.7786121
                                     },
                                     "originalPosition": {
-                                        "latitude": 21.2476272,
-                                        "longitude": 105.667428
+                                        "latitude": 21.0260498,
+                                        "longitude": 105.7773815
                                     },
                                     "type": "stopOver",
-                                    "spot": 0.6976744,
-                                    "sideOfStreet": "left",
-                                    "mappedRoadName": "",
-                                    "label": "",
+                                    "spot": 0.2317597,
+                                    "sideOfStreet": "neither",
+                                    "mappedRoadName": "Đường Phạm Hùng",
+                                    "label": "Đường Phạm Hùng",
                                     "shapeIndex": 0,
                                     "source": "user"
                                 },
                                 "end": {
-                                    "linkId": "-1156729765",
+                                    "linkId": "-1228600042",
                                     "mappedPosition": {
-                                        "latitude": 21.1956962,
-                                        "longitude": 105.5704482
+                                        "latitude": 21.2933169,
+                                        "longitude": 105.6307989
                                     },
                                     "originalPosition": {
-                                        "latitude": 21.1961168,
-                                        "longitude": 105.5704323
+                                        "latitude": 21.2930758,
+                                        "longitude": 105.6297528
                                     },
                                     "type": "stopOver",
-                                    "spot": 0.2720588,
-                                    "sideOfStreet": "right",
+                                    "spot": 0.8899083,
+                                    "sideOfStreet": "neither",
                                     "mappedRoadName": "",
-                                    "label": "",
-                                    "shapeIndex": 199,
+                                    "label": "AH14",
+                                    "shapeIndex": 358,
                                     "source": "user"
                                 },
-                                "length": 18681,
-                                "travelTime": 1779,
+                                "length": 49216,
+                                "travelTime": 3281,
                                 "maneuver": [
                                     {
                                         "position": {
-                                            "latitude": 21.2475946,
-                                            "longitude": 105.6674832
+                                            "latitude": 21.0258631,
+                                            "longitude": 105.7786121
                                         },
-                                        "instruction": "Head <span class=\"heading\">northeast</span>. <span class=\"distance-description\">Go for <span class=\"length\">26 m</span>.</span>",
-                                        "travelTime": 6,
-                                        "length": 26,
+                                        "instruction": "Head <span class=\"heading\">south</span> on <span class=\"street\">Đường Phạm Hùng</span>. <span class=\"distance-description\">Go for <span class=\"length\">54 m</span>.</span>",
+                                        "travelTime": 17,
+                                        "length": 54,
                                         "id": "M1",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.2477946,
-                                            "longitude": 105.6676197
+                                            "latitude": 21.0253859,
+                                            "longitude": 105.7785451
                                         },
-                                        "instruction": "Turn <span class=\"direction\">slightly right</span> toward <span class=\"sign\">AH14</span>. <span class=\"distance-description\">Go for <span class=\"length\">523 m</span>.</span>",
-                                        "travelTime": 79,
-                                        "length": 523,
+                                        "instruction": "Make a U-Turn onto <span class=\"next-street\">Đường Phạm Hùng</span>. <span class=\"distance-description\">Go for <span class=\"length\">925 m</span>.</span>",
+                                        "travelTime": 133,
+                                        "length": 925,
                                         "id": "M2",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.2487173,
-                                            "longitude": 105.6725657
+                                            "latitude": 21.0332823,
+                                            "longitude": 105.7801223
                                         },
-                                        "instruction": "Turn <span class=\"direction\">right</span> onto <span class=\"number\">AH14</span>. <span class=\"distance-description\">Go for <span class=\"length\">634 m</span>.</span>",
-                                        "travelTime": 60,
-                                        "length": 634,
+                                        "instruction": "Keep <span class=\"direction\">left</span> onto <span class=\"next-street\">Cầu Vượt Mai Dịch</span>. <span class=\"distance-description\">Go for <span class=\"length\">752 m</span>.</span>",
+                                        "travelTime": 65,
+                                        "length": 752,
                                         "id": "M3",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.2445438,
-                                            "longitude": 105.676707
+                                            "latitude": 21.0399985,
+                                            "longitude": 105.7809699
                                         },
-                                        "instruction": "Make a U-Turn onto <span class=\"number\">AH14</span>. <span class=\"distance-description\">Go for <span class=\"length\">1.6 km</span>.</span>",
-                                        "travelTime": 138,
-                                        "length": 1611,
+                                        "instruction": "Turn <span class=\"direction\">left</span> onto <span class=\"next-street\">Đường Vành Đai 3</span>. <span class=\"distance-description\">Go for <span class=\"length\">4.9 km</span>.</span>",
+                                        "travelTime": 298,
+                                        "length": 4915,
                                         "id": "M4",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.2555408,
-                                            "longitude": 105.6670082
+                                            "latitude": 21.0831714,
+                                            "longitude": 105.7880831
                                         },
-                                        "instruction": "Take the <span class=\"exit\">2nd exit</span> from roundabout onto <span class=\"number\">AH14</span>. <span class=\"distance-description\">Go for <span class=\"length\">1.4 km</span>.</span>",
-                                        "travelTime": 123,
-                                        "length": 1431,
+                                        "instruction": "Continue on <span class=\"next-street\">Đường Phạm Văn Đồng</span>. <span class=\"distance-description\">Go for <span class=\"length\">3.4 km</span>.</span>",
+                                        "travelTime": 250,
+                                        "length": 3399,
                                         "id": "M5",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.2614524,
-                                            "longitude": 105.6550026
+                                            "latitude": 21.1131477,
+                                            "longitude": 105.7854116
                                         },
-                                        "instruction": "Turn <span class=\"direction\">slightly left</span> onto <span class=\"number\">ĐT.303</span>. <span class=\"distance-description\">Go for <span class=\"length\">116 m</span>.</span>",
-                                        "travelTime": 54,
-                                        "length": 116,
+                                        "instruction": "Continue on <span class=\"next-street\">Đường Võ Văn Kiệt</span>. <span class=\"distance-description\">Go for <span class=\"length\">330 m</span>.</span>",
+                                        "travelTime": 30,
+                                        "length": 330,
                                         "id": "M6",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.2612593,
-                                            "longitude": 105.6539297
+                                            "latitude": 21.1159694,
+                                            "longitude": 105.7844353
                                         },
-                                        "instruction": "Turn <span class=\"direction\">left</span> onto <span class=\"number\">ĐT.303</span>. <span class=\"distance-description\">Go for <span class=\"length\">1.4 km</span>.</span>",
-                                        "travelTime": 124,
-                                        "length": 1419,
+                                        "instruction": "Continue on <span class=\"next-street\">Cầu Việt Thắng</span>. <span class=\"distance-description\">Go for <span class=\"length\">66 m</span>.</span>",
+                                        "travelTime": 5,
+                                        "length": 66,
                                         "id": "M7",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.2588131,
-                                            "longitude": 105.642482
+                                            "latitude": 21.1165488,
+                                            "longitude": 105.7842529
                                         },
-                                        "instruction": "Turn <span class=\"direction\">left</span> onto <span class=\"number\">ĐT.303</span>. <span class=\"distance-description\">Go for <span class=\"length\">5.5 km</span>.</span>",
-                                        "travelTime": 439,
-                                        "length": 5467,
+                                        "instruction": "Continue on <span class=\"next-street\">Đường Võ Văn Kiệt</span>. <span class=\"distance-description\">Go for <span class=\"length\">2.5 km</span>.</span>",
+                                        "travelTime": 153,
+                                        "length": 2516,
                                         "id": "M8",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.2242019,
-                                            "longitude": 105.6092227
+                                            "latitude": 21.1383712,
+                                            "longitude": 105.7783949
                                         },
-                                        "instruction": "Continue on <span class=\"number\">TL.303</span>. <span class=\"distance-description\">Go for <span class=\"length\">2.0 km</span>.</span>",
-                                        "travelTime": 184,
-                                        "length": 2033,
+                                        "instruction": "Continue on <span class=\"next-street\">Cầu Kênh Giữa</span>. <span class=\"distance-description\">Go for <span class=\"length\">59 m</span>.</span>",
+                                        "travelTime": 5,
+                                        "length": 59,
                                         "id": "M9",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.2067783,
-                                            "longitude": 105.6135893
+                                            "latitude": 21.1388969,
+                                            "longitude": 105.7784164
                                         },
-                                        "instruction": "Turn <span class=\"direction\">right</span> onto <span class=\"next-street\">Đường Đê Tả Sông Hồng</span>. <span class=\"distance-description\">Go for <span class=\"length\">505 m</span>.</span>",
-                                        "travelTime": 43,
-                                        "length": 505,
+                                        "instruction": "Continue on <span class=\"next-street\">Đường Võ Văn Kiệt</span>. <span class=\"distance-description\">Go for <span class=\"length\">8.6 km</span>.</span>",
+                                        "travelTime": 578,
+                                        "length": 8627,
                                         "id": "M10",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.2057912,
-                                            "longitude": 105.608933
+                                            "latitude": 21.2164128,
+                                            "longitude": 105.7784593
                                         },
-                                        "instruction": "Continue toward <span class=\"sign\">Đường Đê Tả Sông Hồng</span>. <span class=\"distance-description\">Go for <span class=\"length\">72 m</span>.</span>",
-                                        "travelTime": 11,
-                                        "length": 72,
+                                        "instruction": "Turn <span class=\"direction\">left</span> onto <span class=\"next-street\">Quốc Lộ 2</span> <span class=\"number\">(AH14)</span> toward <span class=\"sign\"><span lang=\"vi-Latn\">Vinh Yen</span>/<span lang=\"vi-Latn\">Duong Cao Toc Noi Bai-Lao Ca</span></span>. <span class=\"distance-description\">Go for <span class=\"length\">566 m</span>.</span>",
+                                        "travelTime": 65,
+                                        "length": 566,
                                         "id": "M11",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.205641,
-                                            "longitude": 105.6082571
+                                            "latitude": 21.2191594,
+                                            "longitude": 105.7738996
                                         },
-                                        "instruction": "Continue on <span class=\"next-street\">Đường Đê Tả Sông Hồng</span>. <span class=\"distance-description\">Go for <span class=\"length\">3.3 km</span>.</span>",
-                                        "travelTime": 282,
-                                        "length": 3341,
+                                        "instruction": "Turn <span class=\"direction\">right</span> onto <span class=\"next-street\">Đường Đi Vĩnh Yên Hà Nội</span> toward <span class=\"sign\"><span lang=\"vi-Latn\">Thai Nguyen</span></span>. <span class=\"distance-description\">Go for <span class=\"length\">225 m</span>.</span>",
+                                        "travelTime": 28,
+                                        "length": 225,
                                         "id": "M12",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.1955237,
-                                            "longitude": 105.581156
+                                            "latitude": 21.2211657,
+                                            "longitude": 105.7739103
                                         },
-                                        "instruction": "Keep <span class=\"direction\">right</span>. <span class=\"distance-description\">Go for <span class=\"length\">68 m</span>.</span>",
-                                        "travelTime": 13,
-                                        "length": 68,
+                                        "instruction": "Keep <span class=\"direction\">left</span> toward <span class=\"sign\"><span lang=\"vi-Latn\">Lao Cai</span></span>. <span class=\"distance-description\">Go for <span class=\"length\">32 m</span>.</span>",
+                                        "travelTime": 5,
+                                        "length": 32,
                                         "id": "M13",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.1953199,
-                                            "longitude": 105.5805445
+                                            "latitude": 21.2214553,
+                                            "longitude": 105.773921
                                         },
-                                        "instruction": "Turn <span class=\"direction\">right</span>. <span class=\"distance-description\">Go for <span class=\"length\">40 m</span>.</span>",
-                                        "travelTime": 17,
-                                        "length": 40,
+                                        "instruction": "Take ramp onto <span class=\"number\">CT.05</span> <span class=\"next-street\">(Cao Tốc Nội Bài Lào Cai)</span>. <span class=\"distance-description\">Go for <span class=\"length\">13.7 km</span>.</span>",
+                                        "travelTime": 634,
+                                        "length": 13691,
                                         "id": "M14",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.1956418,
-                                            "longitude": 105.5803621
+                                            "latitude": 21.2815475,
+                                            "longitude": 105.6708169
                                         },
-                                        "instruction": "Turn <span class=\"direction\">left</span>. <span class=\"distance-description\">Go for <span class=\"length\">393 m</span>.</span>",
-                                        "travelTime": 62,
-                                        "length": 393,
+                                        "instruction": "Take the exit toward <span class=\"sign\"><span lang=\"vi-Latn\">KCN Binh Xuyen</span></span> onto <span class=\"next-street\">Đường Đi Khu Công Nghiệp Bình Xuyên</span>. <span class=\"distance-description\">Go for <span class=\"length\">537 m</span>.</span>",
+                                        "travelTime": 39,
+                                        "length": 537,
                                         "id": "M15",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.1936247,
-                                            "longitude": 105.5773151
+                                            "latitude": 21.2829852,
+                                            "longitude": 105.6680489
                                         },
-                                        "instruction": "Turn <span class=\"direction\">right</span>. <span class=\"distance-description\">Go for <span class=\"length\">368 m</span>.</span>",
-                                        "travelTime": 60,
-                                        "length": 368,
+                                        "instruction": "Continue on <span class=\"next-street\">Đường Đi Khu Công Nghiệp Bình Xuyên</span>. <span class=\"distance-description\">Go for <span class=\"length\">929 m</span>.</span>",
+                                        "travelTime": 108,
+                                        "length": 929,
                                         "id": "M16",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.1968327,
-                                            "longitude": 105.5764246
+                                            "latitude": 21.2784898,
+                                            "longitude": 105.6728554
                                         },
-                                        "instruction": "Turn <span class=\"direction\">left</span>. <span class=\"distance-description\">Go for <span class=\"length\">634 m</span>.</span>",
-                                        "travelTime": 84,
-                                        "length": 634,
+                                        "instruction": "Continue on <span class=\"next-street\">Đường Đi Bình Xuyên Bá Hiến Đại Lải</span> toward <span class=\"sign\"><span lang=\"vi-Latn\">Binh Xuyen</span></span>. <span class=\"distance-description\">Go for <span class=\"length\">63 m</span>.</span>",
+                                        "travelTime": 9,
+                                        "length": 63,
                                         "id": "M17",
                                         "_type": "PrivateTransportManeuverType"
                                     },
                                     {
                                         "position": {
-                                            "latitude": 21.1956962,
-                                            "longitude": 105.5704482
+                                            "latitude": 21.2782001,
+                                            "longitude": 105.6733811
                                         },
-                                        "instruction": "Arrive at your destination on the right.",
+                                        "instruction": "Continue on <span class=\"number\">ĐT.310B</span>. <span class=\"distance-description\">Go for <span class=\"length\">2.6 km</span>.</span>",
+                                        "travelTime": 196,
+                                        "length": 2619,
+                                        "id": "M18",
+                                        "_type": "PrivateTransportManeuverType"
+                                    },
+                                    {
+                                        "position": {
+                                            "latitude": 21.2557232,
+                                            "longitude": 105.666858
+                                        },
+                                        "instruction": "Take the <span class=\"exit\">1st exit</span> from roundabout onto <span class=\"number\">AH14</span>. <span class=\"distance-description\">Go for <span class=\"length\">4.9 km</span>.</span>",
+                                        "travelTime": 361,
+                                        "length": 4894,
+                                        "id": "M19",
+                                        "_type": "PrivateTransportManeuverType"
+                                    },
+                                    {
+                                        "position": {
+                                            "latitude": 21.2847877,
+                                            "longitude": 105.633148
+                                        },
+                                        "instruction": "Take the <span class=\"exit\">1st exit</span> from roundabout onto <span class=\"number\">AH14</span>. <span class=\"distance-description\">Go for <span class=\"length\">2.5 km</span>.</span>",
+                                        "travelTime": 173,
+                                        "length": 2461,
+                                        "id": "M20",
+                                        "_type": "PrivateTransportManeuverType"
+                                    },
+                                    {
+                                        "position": {
+                                            "latitude": 21.3036275,
+                                            "longitude": 105.6244576
+                                        },
+                                        "instruction": "Take the <span class=\"exit\">5th exit</span> from roundabout onto <span class=\"number\">AH14</span>. <span class=\"distance-description\">Go for <span class=\"length\">1.6 km</span>.</span>",
+                                        "travelTime": 129,
+                                        "length": 1556,
+                                        "id": "M21",
+                                        "_type": "PrivateTransportManeuverType"
+                                    },
+                                    {
+                                        "position": {
+                                            "latitude": 21.2933169,
+                                            "longitude": 105.6307989
+                                        },
+                                        "instruction": "Arrive at <span class=\"number\">AH14</span>.",
                                         "travelTime": 0,
                                         "length": 0,
-                                        "id": "M18",
+                                        "id": "M22",
                                         "_type": "PrivateTransportManeuverType"
                                     }
                                 ]
                             }
                         ],
                         "summary": {
-                            "distance": 18681,
-                            "trafficTime": 1798,
-                            "baseTime": 1779,
-                            "text": "The trip takes <span class=\"length\">18.7 km</span> and <span class=\"time\">30 mins</span>.",
-                            "travelTime": 1779,
+                            "distance": 49216,
+                            "trafficTime": 3365,
+                            "baseTime": 3281,
+                            "flags": [
+                                "tollroad",
+                                "motorway",
+                                "builtUpArea"
+                            ],
+                            "text": "The trip takes <span class=\"length\">49.2 km</span> and <span class=\"time\">55 mins</span>.",
+                            "travelTime": 3281,
                             "_type": "RouteSummaryType"
                         }
                     }
@@ -340,24 +390,25 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
         })
 
         const body = {
+            driver_id: req.user.cus_id,
             from: {
                 "loc": {
                     "type": "Point",
-                    "coordinates": [105.66764266646554, 21.248227186178333]
+                    "coordinates": [105.7780682087555, 21.027331696466383]
                 },
                 // lat: 20.96482878714222,
                 // lng: 105.84217557982575,
-                address: "Xã Đạo Đức",
+                address: "Bến xe Mỹ Đình",
                 // province: 'HN'
             },
             to: {
                 "loc": {
                     "type": "Point",
-                    "coordinates": [105.56867468949658, 21.193815659518854]
+                    "coordinates": [105.63181272653117, 21.292436138115065]
                 },
                 // lat: 21.306707419857357,
                 // lng: 105.61272817310709,
-                address: "Huyện Yên Lạc",
+                address: "Big C Vĩnh Phúc",
                 // province: 'VP'
             },
             distance: 44000,
@@ -367,7 +418,10 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
             time_end: 1625885947000,
             price: [
             ],
-            routes: newRoutes
+            routes: {
+                "type": "LineString",
+                "coordinates": newRoutes
+            },
         }
         const journey = new Journeys(body)
         await journey.save()

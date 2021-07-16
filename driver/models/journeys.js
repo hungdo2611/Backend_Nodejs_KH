@@ -60,21 +60,15 @@ const journeys_Schema = mongoose.Schema({
             coordinates: []
         },
     }],
-    routes: [{
-        loc: {
-            type: { type: String },
-            coordinates: []
-        },
-        distance: {
-            type: Number,
-            required: true
-        }
-    }]
+    routes: {
+        type: { type: String },
+        coordinates: []
+    }
 
 })
 
 journeys_Schema.plugin(AutoIncrement, { id: 'journeys_seq', inc_field: 'journey_id' })
-
+journeys_Schema.index({ "routes": "2dsphere" });
 
 const Journeys = mongoose.model('journeys', journeys_Schema)
 

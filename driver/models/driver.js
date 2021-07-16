@@ -20,6 +20,10 @@ const driver_Schema = mongoose.Schema({
             }
         }
     },
+    name: {
+        type: String,
+        required: true,
+    },
     is_active: {
         type: Boolean,
         required: false,
