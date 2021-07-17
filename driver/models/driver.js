@@ -53,7 +53,14 @@ const driver_Schema = mongoose.Schema({
 })
 driver_Schema.plugin(AutoIncrement, { id: 'driver_seq', inc_field: 'driver_id' })
 
-
+driver_Schema.pre('save', async function (next) {
+    // Hash the password before saving the user model
+    const user = this
+    if (user.isModified('password')) {
+        user.password = await bcrypt.hash(user.password, 8)
+    }
+    next()
+})
 
 driver_Schema.methods.generateAuthToken = async function () {
     // Generate an auth token for the user
@@ -71,6 +78,10 @@ driver_Schema.statics.findByCredentials = async (phone) => {
         return null;
     }
 
+    const isPasswordMatch = await bcrypt.compare(password, user.password)
+    if (!isPasswordMatch) {
+        throw new Error({ error: 'Invalid login credentials' })
+    }
     return user
 }
 const Driver = mongoose.model('driver_schema', driver_Schema)

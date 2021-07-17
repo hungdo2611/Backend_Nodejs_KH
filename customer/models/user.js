@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const validatePhone = require('../../utils/validatePhone')
+const { isValidPhoneNumber } = require('libphonenumber-js')
 var AutoIncrement = require('mongoose-sequence')(mongoose);
 
 const customer_Schema = mongoose.Schema({
@@ -15,10 +15,19 @@ const customer_Schema = mongoose.Schema({
         unique: true,
         lowercase: true,
         validate: value => {
-            if (!validatePhone(value)) {
+            if (!isValidPhoneNumber(value, 'VN')) {
                 throw new Error({ error: 'Invalid phone number' })
             }
         }
+    },
+    name: {
+        type: String,
+        required: false,
+    },
+    password: {
+        type: String,
+        required: false,
+        minLength: 6
     },
     is_active: {
         type: Boolean,
@@ -59,7 +68,14 @@ const customer_Schema = mongoose.Schema({
 })
 customer_Schema.plugin(AutoIncrement, { id: 'customer_seq', inc_field: 'cus_id' })
 
-
+// customer_Schema.pre('save', async function (next) {
+//     // Hash the password before saving the user model
+//     const user = this
+//     if (user.isModified('password')) {
+//         user.password = await bcrypt.hash(user.password, 8)
+//     }
+//     next()
+// })
 
 customer_Schema.methods.generateAuthToken = async function () {
     // Generate an auth token for the user
@@ -70,13 +86,17 @@ customer_Schema.methods.generateAuthToken = async function () {
     return token
 }
 
-customer_Schema.statics.findByCredentials = async (phone) => {
+customer_Schema.statics.findByCredentials = async (phone, password) => {
     // Search for a user by email and password.
     const user = await Customer.findOne({ phone })
     if (!user) {
         return null;
     }
 
+    const isPasswordMatch = await bcrypt.compare(password, user.password)
+    if (!isPasswordMatch) {
+        throw new Error({ error: 'Invalid login credentials' })
+    }
     return user
 }
 
