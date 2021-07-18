@@ -5,6 +5,7 @@ const options = {
         host: process.env.DB_REDIS_HOST,
         port: process.env.DB_REDIS_PORT,
         password: process.env.DB_REDIS_PASS,
+        no_ready_check: true,
     },
 }
 

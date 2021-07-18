@@ -29,7 +29,13 @@ customer_router.get('/users/exist/:phone', async (req, res) => {
         }
         const phoneNumber = parsePhoneNumber(phone, 'VN')
         let data = await Customer.findOne({ phone: phoneNumber.number })
-        res.status(200).send({ data: data, err: false })
+        if (data) {
+            res.status(200).send({ data: true, err: false })
+
+        } else {
+            res.status(200).send({ data: false, err: false })
+
+        }
 
     } catch (error) {
         console.log("error", error)
@@ -66,7 +72,7 @@ customer_router.post('/users/register', async (req, res) => {
         const user = new Customer(bodyrequest)
         await user.save()
         const token = await user.generateAuthToken()
-        res.status(201).send({ user, token })
+        res.status(201).send({ data: user, token, err: false })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)
