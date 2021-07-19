@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 const validatePhone = require('../../utils/validatePhone')
 var AutoIncrement = require('mongoose-sequence')(mongoose);
 
+
 const driver_Schema = mongoose.Schema({
     driver_id: {
         type: Number,

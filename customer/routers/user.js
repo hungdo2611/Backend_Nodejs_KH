@@ -5,6 +5,7 @@ const customer_router = express.Router()
 const parsePhoneNumber = require('libphonenumber-js')
 const { isValidPhoneNumber } = require('libphonenumber-js')
 var admin = require("firebase-admin");
+const bcrypt = require('bcryptjs')
 
 
 /**
@@ -53,12 +54,12 @@ customer_router.post('/users/register', async (req, res) => {
         let isvalidate = isValidPhoneNumber(req.body.phone, 'VN');
 
         if (!req.body.phone) {
-            res.status(200).send({ data: null, err: 'Missing Phone number' });
+            res.status(404).send({ data: null, err: 'Missing Phone number' });
             return
         }
 
         if (!isvalidate) {
-            res.status(200).send({ data: null, err: 'Phone number invalid' });
+            res.status(404).send({ data: null, err: 'Phone number invalid' });
             return
         }
         const phoneNumber = parsePhoneNumber(req.body.phone, 'VN')
@@ -78,20 +79,86 @@ customer_router.post('/users/register', async (req, res) => {
         res.status(400).send(error)
     }
 })
+//update profile api
+customer_router.post('/users/profile', auth, async (req, res) => {
+    // Create a new user
+    try {
+        // const body = {
+        //     password: '',
+        //     name: ''
+        // }
+        console.log("req data", req.user)
+        if (req.body.password.length < 6) {
+            res.status(404).send({ data: null, err: "Password min length is 6" })
+            return
+        }
+        const user = req.user;
+        const pass = await bcrypt.hash(req.body.password, 8)
+        let data = await Customer.findOneAndUpdate({ cus_id: user.cus_id }, {
+            name: req.body.name,
+            password: pass
+        }, {
+            new: true
+        });
+
+        res.status(200).send({ data: data, err: false })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
+//reset password
+customer_router.post('/users/reset/password', async (req, res) => {
+    try {
+        // const bodysample = {
+        //     token: token,
+        //     phone: phone,
+        //     password: password
+        // }
+        const tokenFirebase = req.body.token;
+        let verify = await admin.auth().verifyIdToken(tokenFirebase);
+
+
+        if (!req.body.phone) {
+            res.status(404).send({ data: null, err: 'Missing Phone number' });
+            return
+        }
+
+        const phoneNumber = parsePhoneNumber(req.body.phone, 'VN')
+        const passhash = await bcrypt.hash(req.body.password, 8)
+        let user = await Customer.findOneAndUpdate({ phone: phoneNumber.number, }, {
+            password: passhash
+        }, {
+            new: true
+        });
+
+
+        const token = await user.generateAuthToken()
+        res.status(201).send({ data: user, token, err: false })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
 //login api
 customer_router.post('/users/login', async (req, res) => {
     //Login a registered user
     try {
-        const { phone } = req.body
+        const { phone, password } = req.body
+        const phoneNumber = parsePhoneNumber(phone, 'VN')
 
-        const user = await Customer.findByCredentials(phone)
+        const user = await Customer.findByCredentials(phoneNumber.number, password)
+        if (user == "wrong password") {
+            return res.status(200).send({ err: true, data: "Wrong pass" })
+        }
         if (!user) {
-            return res.status(401).send({ err: true, data: "user not found" })
+            return res.status(200).send({ err: true, data: "user not found" })
         }
         const token = await user.generateAuthToken()
-        res.send({ user, token })
+        res.status(200).send({ data: user, token, err: false })
     } catch (error) {
-        res.status(400).send(error)
+        res.status(400).send(error);
+        console.log('err login', error)
     }
 })
 //logout api
