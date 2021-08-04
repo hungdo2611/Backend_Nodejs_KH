@@ -44,7 +44,6 @@ function getMinDistance(origin, route) {
 routerBooking.post('/booking/create', auth, async (req, res) => {
     // Create a new user
     try {
-        console.log('req user', req.user)
         const body_booking = {
             cus_id: 2,
             cus_id: req.user.cus_id,
@@ -76,8 +75,9 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
                     $maxDistance: 2000
                 }
             }
-        });
-        console.log('dataJourney', dataJourney)
+        }).populate('driver_id', "phone avatar");
+        
+        console.log('dataJourney', dataJourney[0])
         // Journeys.find({ 'to.province': 'VP' }, (err, data) => {
         //     data.forEach(journey => {
 

@@ -7,6 +7,21 @@ const { isValidPhoneNumber } = require('libphonenumber-js')
 var admin = require("firebase-admin");
 const bcrypt = require('bcryptjs')
 
+const formatUser = (user) => {
+    return {
+        "is_active": user.is_active,
+        "fb_id": user.fb_id,
+        "gg_id": user.gg_id,
+        "avatar": user.avatar,
+        "point": user.point,
+        "phone": user.phone,
+        "join_date": user.join_date,
+        "name": user.name,
+
+        "cus_id": user.cus_id,
+
+    }
+}
 
 /**
  * @swagger
@@ -155,7 +170,8 @@ customer_router.post('/users/login', async (req, res) => {
             return res.status(200).send({ err: true, data: "user not found" })
         }
         const token = await user.generateAuthToken()
-        res.status(200).send({ data: user, token, err: false })
+        const responeDt = formatUser(user);
+        res.status(200).send({ data: { ...responeDt, token }, token, err: false })
     } catch (error) {
         res.status(400).send(error);
         console.log('err login', error)

@@ -3,9 +3,11 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const validatePhone = require('../../utils/validatePhone')
 var AutoIncrement = require('mongoose-sequence')(mongoose);
+const Schema = mongoose.Schema;
 
 
 const driver_Schema = mongoose.Schema({
+    _id: Schema.Types.ObjectId,
     driver_id: {
         type: Number,
         required: false,
@@ -23,7 +25,7 @@ const driver_Schema = mongoose.Schema({
     },
     name: {
         type: String,
-        required: true,
+        required: false,
     },
     is_active: {
         type: Boolean,

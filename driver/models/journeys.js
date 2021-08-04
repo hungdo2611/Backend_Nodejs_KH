@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const Schema = mongoose.Schema;
 
 var AutoIncrement = require('mongoose-sequence')(mongoose);
 
@@ -8,8 +9,8 @@ const journeys_Schema = mongoose.Schema({
         required: false,
     },
     driver_id: {
-        type: Number,
-        required: false,
+        type: Schema.Types.ObjectId,
+        ref: 'driver_schema'
     },
     lst_cus_id: [{
         type: Number

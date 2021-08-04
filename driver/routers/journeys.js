@@ -390,7 +390,7 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
         })
 
         const body = {
-            driver_id: req.user.cus_id,
+            driver_id: req.user._id,
             from: {
                 "loc": {
                     "type": "Point",

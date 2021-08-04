@@ -1,11 +1,26 @@
 const express = require('express')
 const Driver = require('../models/driver')
 const auth = require('../middleware/auth')
+const mongoose = require('mongoose');
 
 const driver_router = express.Router()
 
 
+const formatUser = (user) => {
+    return {
+        "is_active": user.is_active,
+        "fb_id": user.fb_id,
+        "gg_id": user.gg_id,
+        "avatar": user.avatar,
+        "point": user.point,
+        "phone": user.phone,
+        "join_date": user.join_date,
+        "name": user.name,
 
+        "driver_id": user.driver_id,
+
+    }
+}
 
 
 /**
@@ -27,7 +42,7 @@ driver_router.post('/driver/register', async (req, res) => {
         const body = {
             phone: req.body.phone,
             join_date: Date.now(),
-
+            _id: new mongoose.Types.ObjectId(),
         }
         const user = new Driver(body)
         console.log("user", req.body)
@@ -50,7 +65,9 @@ driver_router.post('/driver/login', async (req, res) => {
             return res.status(401).send({ err: true, data: "user not found" })
         }
         const token = await user.generateAuthToken()
-        res.send({ user, token })
+        const responeDt = formatUser(user);
+
+        res.status(200).send({ data: { ...responeDt, token }, token, err: false })
     } catch (error) {
         res.status(400).send(error)
     }
