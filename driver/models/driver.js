@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const validatePhone = require('../../utils/validatePhone')
+const { isValidPhoneNumber } = require('libphonenumber-js')
 var AutoIncrement = require('mongoose-sequence')(mongoose);
 const Schema = mongoose.Schema;
 
@@ -18,7 +18,7 @@ const driver_Schema = mongoose.Schema({
         unique: true,
         lowercase: true,
         validate: value => {
-            if (!validatePhone(value)) {
+            if (!isValidPhoneNumber(value, 'VN')) {
                 throw new Error({ error: 'Invalid phone number' })
             }
         }
@@ -80,10 +80,13 @@ driver_Schema.statics.findByCredentials = async (phone) => {
     if (!user) {
         return null;
     }
+    if (!user.password) {
+        return "wrong password"
+    }
 
     const isPasswordMatch = await bcrypt.compare(password, user.password)
     if (!isPasswordMatch) {
-        throw new Error({ error: 'Invalid login credentials' })
+        return "wrong password"
     }
     return user
 }
