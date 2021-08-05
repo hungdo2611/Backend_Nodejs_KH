@@ -91,11 +91,12 @@ driver_router.post('/driver/register', async (req, res) => {
 
         }
         const user = new Driver(bodyrequest)
-        console.log("bodyrequest", bodyrequest)
 
         await user.save()
+        const responeDt = formatUser(user);
+
         const token = await user.generateAuthToken()
-        res.status(201).send({ data: user, token, err: false })
+        res.status(200).send({ data: { ...responeDt, token }, token, err: false })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)
@@ -168,8 +169,10 @@ driver_router.post('/driver/profile', auth, async (req, res) => {
         }, {
             new: true
         });
+        const responeDt = formatUser(data);
 
-        res.status(200).send({ data: data, err: false })
+
+        res.status(200).send({ data: responeDt, err: false })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)
@@ -202,7 +205,9 @@ driver_router.post('/driver/reset/password', async (req, res) => {
 
 
         const token = await user.generateAuthToken()
-        res.status(201).send({ data: user, token, err: false })
+        const responeDt = formatUser(data);
+
+        res.status(200).send({ data: { ...responeDt, token }, token, err: false })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)

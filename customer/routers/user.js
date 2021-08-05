@@ -88,7 +88,9 @@ customer_router.post('/users/register', async (req, res) => {
         const user = new Customer(bodyrequest)
         await user.save()
         const token = await user.generateAuthToken()
-        res.status(201).send({ data: user, token, err: false })
+        const responeDt = formatUser(user);
+
+        res.status(200).send({ data: { ...responeDt, token }, token, err: false })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)
@@ -115,8 +117,9 @@ customer_router.post('/users/profile', auth, async (req, res) => {
         }, {
             new: true
         });
+        const responeDt = formatUser(data);
 
-        res.status(200).send({ data: data, err: false })
+        res.status(200).send({ data: responeDt, err: false })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)
@@ -149,7 +152,9 @@ customer_router.post('/users/reset/password', async (req, res) => {
 
 
         const token = await user.generateAuthToken()
-        res.status(201).send({ data: user, token, err: false })
+        const responeDt = formatUser(data);
+
+        res.status(200).send({ data: { ...responeDt, token }, token, err: false })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)
