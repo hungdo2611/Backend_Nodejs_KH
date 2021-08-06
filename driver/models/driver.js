@@ -12,6 +12,10 @@ const driver_Schema = mongoose.Schema({
         type: Number,
         required: false,
     },
+    password: {
+        type: String,
+        required: false,
+    },
     phone: {
         type: String,
         required: true,
@@ -77,6 +81,7 @@ driver_Schema.methods.generateAuthToken = async function () {
 driver_Schema.statics.findByCredentials = async (phone) => {
     // Search for a user by email and password.
     const user = await Driver.findOne({ phone })
+    console.log("user", user)
     if (!user) {
         return null;
     }
