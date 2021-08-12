@@ -42,6 +42,7 @@ const formatUser = (user) => {
 driver_router.get('/driver/exist/:phone', async (req, res) => {
     // Create a new user
     try {
+        console.log('check')
         let phone = req.params.phone;
         let isvalidate = isValidPhoneNumber(phone, 'VN')
         if (!isvalidate) {

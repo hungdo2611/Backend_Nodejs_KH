@@ -2,7 +2,11 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 var AutoIncrement = require('mongoose-sequence')(mongoose);
-
+const CONSTANT_STATUS_JOUNEYS = {
+    PENDING: 'PENDING',
+    STARTED: 'STARTED',
+    END: 'END'
+}
 const journeys_Schema = mongoose.Schema({
     journey_id: {
         type: Number,
@@ -41,12 +45,9 @@ const journeys_Schema = mongoose.Schema({
     },
     status: {
         type: String,
-        required: true,
+        default: CONSTANT_STATUS_JOUNEYS.PENDING
     },
-    empty_seat: {
-        type: Number,
-        required: true
-    },
+
     time_start: {
         type: Number,
         required: true
@@ -55,12 +56,31 @@ const journeys_Schema = mongoose.Schema({
         type: Number,
         required: true
     },
+    allow_Shipping: {
+        type: Boolean,
+        required: true
+    },
     price: [{
-        loc: {
-            type: { type: String },
-            coordinates: []
+        distance: {
+            type: Number,
+            required: true
         },
+        value: {
+            type: Number,
+            required: true
+        }
     }],
+    price_shipping: [{
+        distance: {
+            type: Number,
+            required: true
+        },
+        value: {
+            type: Number,
+            required: true
+        }
+    }],
+
     routes: {
         type: { type: String },
         coordinates: []

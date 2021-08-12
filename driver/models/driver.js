@@ -78,7 +78,7 @@ driver_Schema.methods.generateAuthToken = async function () {
     return token
 }
 
-driver_Schema.statics.findByCredentials = async (phone) => {
+driver_Schema.statics.findByCredentials = async (phone, password) => {
     // Search for a user by email and password.
     const user = await Driver.findOne({ phone })
     console.log("user", user)
