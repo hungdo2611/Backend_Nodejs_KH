@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 var AutoIncrement = require('mongoose-sequence')(mongoose);
+const Schema = mongoose.Schema;
 
 const booking_Schema = mongoose.Schema({
     booking_id: {
@@ -7,12 +8,12 @@ const booking_Schema = mongoose.Schema({
         required: false,
     },
     cus_id: {
-        type: Number,
-        required: true,
+        type: Schema.Types.ObjectId,
+        required: 'Customer',
     },
     driver_id: {
-        type: Number,
-        required: false,
+        type: Schema.Types.ObjectId,
+        ref: 'driver_schema'
     },
     from: {
         loc: {
@@ -46,6 +47,10 @@ const booking_Schema = mongoose.Schema({
         type: Number,
         required: false,
     },
+    seat: {
+        type: Number,
+        required: 2,
+    }
 
 
 

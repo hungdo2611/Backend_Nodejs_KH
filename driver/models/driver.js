@@ -56,7 +56,11 @@ const driver_Schema = mongoose.Schema({
             type: String,
             required: true
         }
-    }]
+    }],
+    device_token: {
+        type: String,
+        require: false
+    }
 })
 driver_Schema.plugin(AutoIncrement, { id: 'driver_seq', inc_field: 'driver_id' })
 

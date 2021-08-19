@@ -64,6 +64,20 @@ driver_router.get('/driver/exist/:phone', async (req, res) => {
         res.status(400).send(error)
     }
 })
+//register device token
+driver_router.post('/driver/register/devicetoken', auth, async (req, res) => {
+    // Create a new user
+    try {
+        const { device_token } = req.body;
+        req.user.device_token = device_token;
+        await req.user.save()
+
+        res.status(200).send({ data: true, err: false })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
 //register api
 driver_router.post('/driver/register', async (req, res) => {
     // Create a new user
@@ -132,6 +146,7 @@ driver_router.post('/driver/me/logout', auth, async (req, res) => {
         req.user.tokens = req.user.tokens.filter((token) => {
             return token.token != req.token
         })
+        req.user.device_token = ''
         await req.user.save()
         res.send({ err: false, data: "success" })
     } catch (error) {
@@ -162,15 +177,12 @@ driver_router.post('/driver/profile', auth, async (req, res) => {
             res.status(404).send({ data: null, err: "Password min length is 6" })
             return
         }
-        const user = req.user;
         const pass = await bcrypt.hash(req.body.password, 8)
-        let data = await Driver.findOneAndUpdate({ driver_id: user.driver_id }, {
-            name: req.body.name,
-            password: pass
-        }, {
-            new: true
-        });
-        const responeDt = formatUser(data);
+        req.user.name = req.body.name;
+        req.user.password = pass;
+
+        await req.user.save();
+        const responeDt = formatUser(req.user);
 
 
         res.status(200).send({ data: responeDt, err: false })

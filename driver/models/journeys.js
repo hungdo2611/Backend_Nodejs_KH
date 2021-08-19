@@ -3,9 +3,10 @@ const Schema = mongoose.Schema;
 
 var AutoIncrement = require('mongoose-sequence')(mongoose);
 const CONSTANT_STATUS_JOUNEYS = {
-    PENDING: 'PENDING',
+    WAITING: 'WAITING',
     STARTED: 'STARTED',
-    END: 'END'
+    END: 'END',
+    CANCEL:'CANCEL'
 }
 const journeys_Schema = mongoose.Schema({
     journey_id: {
@@ -45,7 +46,7 @@ const journeys_Schema = mongoose.Schema({
     },
     status: {
         type: String,
-        default: CONSTANT_STATUS_JOUNEYS.PENDING
+        default: CONSTANT_STATUS_JOUNEYS.WAITING
     },
 
     time_start: {

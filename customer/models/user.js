@@ -3,8 +3,10 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { isValidPhoneNumber } = require('libphonenumber-js')
 var AutoIncrement = require('mongoose-sequence')(mongoose);
+const Schema = mongoose.Schema;
 
 const customer_Schema = mongoose.Schema({
+    _id: Schema.Types.ObjectId,
     cus_id: {
         type: Number,
         required: false,
@@ -63,7 +65,11 @@ const customer_Schema = mongoose.Schema({
             type: String,
             required: true
         }
-    }]
+    }],
+    device_token: {
+        type: String,
+        require: false
+    }
 })
 customer_Schema.plugin(AutoIncrement, { id: 'customer_seq', inc_field: 'cus_id' })
 
