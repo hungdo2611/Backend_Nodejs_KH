@@ -26,8 +26,20 @@ const formatUser = (user) => {
 
     }
 }
+async function pushNotificationTo_Driver(lst, title, body, data) {
+    const send = await admin.messaging().sendMulticast({
+        tokens: lst,
+        data: data,
+        notification: {
+            title: title,
+            body: body,
 
+        },
+    });
+    console.log("send status", send)
 
+}
+// pushNotificationTo_Driver('610c97f6541293b369324056')
 /**
  * @swagger
  * /users:
@@ -78,6 +90,8 @@ driver_router.post('/driver/register/devicetoken', auth, async (req, res) => {
         res.status(400).send(error)
     }
 })
+
+
 //register api
 driver_router.post('/driver/register', async (req, res) => {
     // Create a new user
@@ -227,4 +241,4 @@ driver_router.post('/driver/reset/password', async (req, res) => {
     }
 })
 
-module.exports = driver_router;
+module.exports = { driver_router, pushNotificationTo_Driver };

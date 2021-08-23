@@ -1,6 +1,6 @@
 const express = require('express')
 const customer_router = require('./customer/routers/user')
-const driver_router = require('./driver/routers/driver')
+const { driver_router } = require('./driver/routers/driver')
 const Journey_router = require('./driver/routers/journeys')
 const routerBooking = require("./customer/routers/booking")
 const swaggerUi = require('swagger-ui-express');

@@ -5,8 +5,13 @@ const auth = require('../middleware/auth')
 const { findingJouneys } = require('../worker/workerBooking')
 require('../worker/workerBookingProcess')
 const routerBooking = express.Router()
+const mongoose = require('mongoose');
 
 const geolib = require('geolib');
+const { request } = require('express')
+const Driver = require('../../driver/models/driver')
+const { pushNotificationTo_Driver } = require('../../driver/routers/driver')
+const { CONSTANT_NOTIFICATION, CONSTANT_STATUS_BOOKING } = require('../../constant/index')
 
 const STATUS_BOOKING = {
     FINDING: 'FINDING',
@@ -51,12 +56,14 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
     // Create a new user
     try {
         const body_booking = {
+            _id: new mongoose.Types.ObjectId(),
             cus_id: req.user._id,
             from: {
                 "loc": {
                     "type": "Point",
                     "coordinates": [req.body.from.lng, req.body.from.lat]
                 },
+
                 address: req.body.from.address,
             },
             to: {
@@ -67,32 +74,53 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
                 address: req.body.to.address,
             },
             distance: req.body.distance,
-            status: 'FINDING',
+            status: CONSTANT_STATUS_BOOKING.FINDING_DRIVER,
             seat: req.body.seat,
+            time_start: req.body.time_start,
 
         };
-        const dataJourney = await Journeys.find({
-            routes: {
-                $nearSphere: {
-                    $geometry: {
-                        type: "Point",
-                        coordinates: body_booking.from.loc.coordinates
-                    },
-                    $maxDistance: 2000
-                }
+        const booking = new Booking(body_booking);
+        await booking.save();
+
+        const { lst_devicetoken } = req.body;
+        console.log('lst_devicetoken', lst_devicetoken)
+        pushNotificationTo_Driver(
+            lst_devicetoken,
+            'Có hành khách muốn đi chuyến xe của bạn',
+            'Hãy xác nhận bạn có thể đón khách hay không nhé ^^',
+            {
+                type: CONSTANT_NOTIFICATION.CUSTOMER_REQUEST_TO_DRIVER,
+                booking_id: booking._id.toString()
+            })
+
+        res.status(200).send({ err: false, data: "success" })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
+routerBooking.post('/booking/request_to_driver', auth, async (req, res) => {
+    // Create a new user
+    try {
+        const { lst_devicetoken, booking_id } = request.body;
+        if (!Array.isArray(lst_id)) {
+            res.status(400).send({ err: false, data: "Wrong format" });
+        }
+        pushNotificationTo_Driver(
+            lst_devicetoken,
+            'Có hành khách muốn đi chuyến xe của bạn',
+            'Hãy xác nhận bạn có thể đón khách hay không nhé ^^',
+            {
+                type: CONSTANT_NOTIFICATION.CUSTOMER_REQUEST_TO_DRIVER,
+                data: { booking_id: booking_id }
+            })
+        const dataDriver = await Driver.find({
+            _id: {
+                $in: lst_id
             }
-        }).populate('driver_id', "phone avatar");
+        })
 
-        console.log('dataJourney', dataJourney[0])
-        // Journeys.find({ 'to.province': 'VP' }, (err, data) => {
-        //     data.forEach(journey => {
 
-        //         let minDistance = getMinDistance({ latitude: body_booking.from.lat, longitude: body_booking.from.lng }, journey.routes)
-        //         console.log('minDistance', minDistance)
-        //     })
-        // })
-        // const booking = new Booking(body_booking);
-        // await booking.save();
         res.status(201).send({ err: false, data: dataJourney });
     } catch (error) {
         console.log("error", error)
@@ -117,7 +145,7 @@ routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
             },
 
         };
-        const dataJourneyFrom = Journeys.find({
+        const dataJourney = await Journeys.find({
             routes: {
                 $nearSphere: {
                     $geometry: {
@@ -127,8 +155,6 @@ routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
                     $maxDistance: 2000
                 }
             },
-        }).populate('driver_id', "phone avatar name");
-        const dataJourneyTo = Journeys.find({
             routes: {
                 $nearSphere: {
                     $geometry: {
@@ -137,47 +163,16 @@ routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
                     },
                     $maxDistance: 5000
                 }
-            }
-        }).populate('driver_id', "phone avatar name");
-        const allData = await Promise.all([dataJourneyFrom, dataJourneyTo,]);
-        if (!allData[0] || !allData[1]) {
-            res.status(201).send({ err: false, data: [] });
-            return
-        }
-        console.log("allData0", allData[0])
-        console.log("allData1", allData[1])
-
-        const dataDriver = allData[0].filter(element => {
-            const lst = allData[1]
-            let index = lst.findIndex(vl => {
-                return element.journey_id == vl.journey_id
-            })
-            if (index == -1) {
-                return
-            } else {
-                return element
-            }
-        });
-        console.log("dataDriver", dataDriver)
-        const dataFilterTime = dataDriver.filter(dt => {
-            return dt.time_end > (Date.now() / 1000) >> 0
-        })
-
-
-        // Journeys.find({ 'to.province': 'VP' }, (err, data) => {
-        //     data.forEach(journey => {
-
-        //         let minDistance = getMinDistance({ latitude: body_booking.from.lat, longitude: body_booking.from.lng }, journey.routes)
-        //         console.log('minDistance', minDistance)
-        //     })
-        // })
-        // const booking = new Booking(body_booking);
-        // await booking.save();
-        res.status(201).send({ err: false, data: dataFilterTime });
+            },
+            time_end: { $gte: (Date.now() / 1000) >> 0 }
+        }).populate('driver_id', "phone avatar name device_token");
+        console.log('dataJourney', dataJourney)
+        res.status(201).send({ err: false, data: dataJourney });
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)
     }
 })
+
 
 module.exports = routerBooking;
