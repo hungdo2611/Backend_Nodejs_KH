@@ -50,6 +50,26 @@ function getMinDistance(origin, route) {
 
 }
 
+routerBooking.post('/booking/cancel', auth, async (req, res) => {
+    try {
+        const { id, reason } = req.body
+        const booking = await Booking.findOne({
+            _id: id
+        })
+        if (!booking) {
+            res.status(200).send({ err: true, data: "booking not found" })
+            return
+        }
+        booking.reason = reason;
+        booking.status = CONSTANT_STATUS_BOOKING.USER_CANCEL;
+        booking.save();
+        res.status(200).send({ err: false, data: "success" })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
+
 
 
 routerBooking.post('/booking/create', auth, async (req, res) => {
@@ -93,40 +113,13 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
                 booking_id: booking._id.toString()
             })
 
-        res.status(200).send({ err: false, data: "success" })
+        res.status(200).send({ err: false, data: booking })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)
     }
 })
-routerBooking.post('/booking/request_to_driver', auth, async (req, res) => {
-    // Create a new user
-    try {
-        const { lst_devicetoken, booking_id } = request.body;
-        if (!Array.isArray(lst_id)) {
-            res.status(400).send({ err: false, data: "Wrong format" });
-        }
-        pushNotificationTo_Driver(
-            lst_devicetoken,
-            'Có hành khách muốn đi chuyến xe của bạn',
-            'Hãy xác nhận bạn có thể đón khách hay không nhé ^^',
-            {
-                type: CONSTANT_NOTIFICATION.CUSTOMER_REQUEST_TO_DRIVER,
-                data: { booking_id: booking_id }
-            })
-        const dataDriver = await Driver.find({
-            _id: {
-                $in: lst_id
-            }
-        })
 
-
-        res.status(201).send({ err: false, data: dataJourney });
-    } catch (error) {
-        console.log("error", error)
-        res.status(400).send(error)
-    }
-})
 routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
     // Create a new user
     try {

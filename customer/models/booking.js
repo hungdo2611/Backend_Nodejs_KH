@@ -56,6 +56,10 @@ const booking_Schema = mongoose.Schema({
         type: Number,
         required: true
     },
+    reason: {
+        type: String,
+        required: false
+    }
 
 
 

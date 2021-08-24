@@ -63,7 +63,7 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
             },
         }
         */
-       console.log("req.body", req.body)
+        console.log("req.body", req.body)
         const body = {
             driver_id: req.user._id,
             from: {
@@ -81,7 +81,7 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
                 },
                 address: req.body.to.address,
             },
-            allow_Shipping:req.body.allow_Shipping,
+            allow_Shipping: req.body.allow_Shipping,
             distance: req.body.distance,
             time_start: req.body.time_start,
             time_end: req.body.time_end,
@@ -94,7 +94,7 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
         }
         const journey = new Journeys(body)
         await journey.save()
-        res.status(200).send({ err: false, data: "success" })
+        res.status(200).send({ err: false, data: journey })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)
