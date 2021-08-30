@@ -8,9 +8,13 @@ const booking_Schema = mongoose.Schema({
         type: Number,
         required: false,
     },
+    journey_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'journeys',
+    },
     cus_id: {
         type: Schema.Types.ObjectId,
-        required: 'Customer',
+        ref: 'Customer',
     },
     driver_id: {
         type: Schema.Types.ObjectId,

@@ -10,7 +10,7 @@ const bcrypt = require('bcryptjs')
 
 var admin = require("firebase-admin");
 
-
+const CONSTANT_DATA = require('../../constant')
 const formatUser = (user) => {
     return {
         "is_active": user.is_active,
@@ -50,6 +50,20 @@ async function pushNotificationTo_Driver(lst, title, body, data) {
  *          description: A successful respone
 
  */
+
+//get service charge 
+driver_router.get('/driver/service/charge', async (req, res) => {
+    try {
+
+        res.status(200).send({ data: CONSTANT_DATA.SERVICE_CHARGE, err: false })
+
+
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
+
 //check phone exist api
 driver_router.get('/driver/exist/:phone', async (req, res) => {
     // Create a new user

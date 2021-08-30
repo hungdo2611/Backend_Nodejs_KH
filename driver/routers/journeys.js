@@ -1,7 +1,9 @@
 const express = require('express')
 const Journeys = require('../models/journeys')
 const auth = require('../middleware/auth')
-
+const { CONSTANT_STATUS_JOUNEYS } = require('../../constant/index')
+const Booking = require('../../customer/models/booking')
+const { CONSTANT_STATUS_BOOKING, SERVICE_CHARGE, TYPE_TRANSACTION } = require('../../constant')
 const Journey_router = express.Router()
 
 function convertData(data) {
@@ -18,8 +20,68 @@ function convertData(data) {
     })
     return route
 }
-
-
+// accept booking 
+Journey_router.get('/journey/accept/booking', auth, async (req, res) => {
+    try {
+        const { booking_id, journey_id, price } = req.body
+        if (!booking_id || !journey_id || !price) {
+            res.status(200).send({ err: true, data: 'missing param' })
+        }
+        //
+        let user = req.user;
+        const formatPrice = Math.abs(price);
+        const value_service_charge = formatPrice * SERVICE_CHARGE;
+        if (user.point < value_service_charge) {
+            res.status(200).send({ err: true, data: null, message: 'Số dự coin không đủ để nhận chuyến đi này. Vui lòng nạp thêm coin để có thể nhận thêm chuyến đi này' })
+            return
+        }
+        user.point = user.point - formatPrice * SERVICE_CHARGE;
+        user.lst_transaction = [...user.lst_transaction, {
+            time: (Date.now() / 1000) >> 0,
+            type: TYPE_TRANSACTION.ACCEPT_BOOKING,
+            content: `Trừ coin để nhận chuyến`,
+            value: value_service_charge
+        }]
+        const promise_save_user = user.save();
+        //
+        let promise_booking = Booking.findOne({ _id: booking_id });
+        let promise_journey = Journeys.findOne({ _id: journey_id })
+        const all_data = await Promise.all([promise_booking, promise_journey]);
+        const data_booking = all_data[0];
+        const data_journeys = all_data[1];
+        if (data_booking.status != CONSTANT_STATUS_BOOKING.FINDING_DRIVER) {
+            res.status(200).send({ err: true, data: null, message: 'Chuyến đi này đã có tài xế khác nhận rồi. Hãy nhanh tay nhận chuyến ở lần sau nhé ^^' })
+            return
+        }
+        if (data_journeys.status === CONSTANT_STATUS_JOUNEYS.WAITING || data_journeys.status === CONSTANT_STATUS_JOUNEYS.STARTED) {
+            res.status(200).send({ err: true, data: null, message: 'Bạn không thể nhận chuyến đi này vì hành trình của bạn đã kết thúc' })
+            return
+        }
+        // set data for booking
+        data_booking.status = CONSTANT_STATUS_BOOKING.PROCESSING;
+        data_booking.journey_id = journey_id;
+        data_booking.driver_id = req.user._id
+        const promise_save_booking = data_booking.save();
+        //set data for journey
+        data_journeys.lst_booking_id = [...data_journeys.lst_booking_id, booking_id]
+        const promise_save_journey = data_journeys.save();
+        const save_action = await Promise.all([promise_save_user, promise_save_booking, promise_save_journey])
+        res.status(200).send({ err: false, data: 'success' })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
+// get current journey
+Journey_router.get('/journey/current', auth, async (req, res) => {
+    try {
+        const currentJourney = await Journeys.findOne({ driver_id: req.user._id }).or([{ 'status': CONSTANT_STATUS_JOUNEYS.WAITING }, { 'status': CONSTANT_STATUS_JOUNEYS.STARTED }]).sort({ $natural: -1 })
+        res.status(200).send({ err: false, data: currentJourney })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
 //register api
 Journey_router.post('/journey/create', auth, async (req, res) => {
     // Create journey

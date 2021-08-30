@@ -2,12 +2,8 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 var AutoIncrement = require('mongoose-sequence')(mongoose);
-const CONSTANT_STATUS_JOUNEYS = {
-    WAITING: 'WAITING',
-    STARTED: 'STARTED',
-    END: 'END',
-    CANCEL:'CANCEL'
-}
+const { CONSTANT_STATUS_JOUNEYS } = require('../../constant/index')
+
 const journeys_Schema = mongoose.Schema({
     journey_id: {
         type: Number,
@@ -17,8 +13,8 @@ const journeys_Schema = mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'driver_schema'
     },
-    lst_cus_id: [{
-        type: Number
+    lst_booking_id: [{
+        type: Schema.Types.ObjectId,
     }],
     from: {
         loc: {

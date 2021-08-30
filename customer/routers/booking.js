@@ -2,6 +2,7 @@ const express = require('express')
 const Booking = require('../models/booking')
 const Journeys = require('../../driver/models/journeys')
 const auth = require('../middleware/auth')
+const authDriver = require('../../driver/middleware/auth')
 const { findingJouneys } = require('../worker/workerBooking')
 require('../worker/workerBookingProcess')
 const routerBooking = express.Router()
@@ -69,6 +70,19 @@ routerBooking.post('/booking/cancel', auth, async (req, res) => {
         res.status(400).send(error)
     }
 })
+routerBooking.get('/booking/driver/getdatabooking', authDriver, async (req, res) => {
+    try {
+
+        const booking_id = req.query.booking_id
+        console.log('booking_id', booking_id)
+        const databooking = await Booking.findOne({ _id: booking_id }).populate("cus_id", 'phone name avatar')
+        res.status(200).send({ err: false, data: databooking })
+
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
 
 
 
@@ -119,6 +133,15 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
         res.status(400).send(error)
     }
 })
+//f4hWrSKDYkI8u81l8HY88V:APA91bEzDWFcLKH8RNe1802c0xzFkETfuf3cbYf00ZqwSLp8o1-TQLea_vo7ShK-Ylso2WRoxhxZxGsjjPtsOqGzlncsEJGDUwNNtv4z_qMzTiHUgrRltrMNAgVPQnZ0jI3PSQeKGo0U
+pushNotificationTo_Driver(
+    ["eC-ntvuRL0LKm-4GWdIamJ:APA91bFDZq4KvVerLcSN0TVraVQ-BCo5_exzFXd102RnVRrdJW6I_q1QtazS_ACBqaL5UUKXjZzhtWM0isOMlvhD8jUJkmVOgVtm7GVQ98fhDx2idffeowGjwmOHx4iy1PGXY5UF6JsL"],
+    'Có hành khách muốn đi chuyến xe của bạn',
+    'Hãy xác nhận bạn có thể đón khách hay không nhé ^^',
+    {
+        type: CONSTANT_NOTIFICATION.CUSTOMER_REQUEST_TO_DRIVER,
+        booking_id: "6123690f14896711e328c7eb"
+    })
 
 routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
     // Create a new user

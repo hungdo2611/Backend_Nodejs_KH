@@ -1,4 +1,14 @@
 const express = require('express')
+
+
+var admin = require("firebase-admin");
+
+var serviceAccount = require("./be-booking-6dd8b-firebase-adminsdk-mhr7h-2e93874e1a.json");
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+
 const customer_router = require('./customer/routers/user')
 const { driver_router } = require('./driver/routers/driver')
 const Journey_router = require('./driver/routers/journeys')
@@ -10,13 +20,6 @@ const geolib = require('geolib');
 require('./db/db')
 
 
-var admin = require("firebase-admin");
-
-var serviceAccount = require("./be-booking-6dd8b-firebase-adminsdk-mhr7h-2e93874e1a.json");
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
 
 
 

@@ -51,6 +51,20 @@ const driver_Schema = mongoose.Schema({
         default: 0
 
     },
+    lst_transaction: [{
+        time: {
+            type: Number,
+        },
+        type: {
+            type: String,
+        },
+        content: {
+            type: String,
+        },
+        value: {
+            type: Number,
+        }
+    }],
     tokens: [{
         token: {
             type: String,
