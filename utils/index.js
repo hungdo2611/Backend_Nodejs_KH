@@ -1,5 +1,16 @@
-function omit(key, obj) {
-    const { [key]: omitted, ...rest } = obj;
-    return rest;
+var admin = require("firebase-admin");
+
+async function pushNotificationTo_User(lst, title, body, data) {
+    const send = await admin.messaging().sendMulticast({
+        tokens: lst,
+        data: data,
+        notification: {
+            title: title,
+            body: body,
+
+        },
+    });
+    console.log("send status", send)
+
 }
-module.exports = { omit }
+module.exports = { pushNotificationTo_User }

@@ -11,7 +11,7 @@ const mongoose = require('mongoose');
 const geolib = require('geolib');
 const { request } = require('express')
 const Driver = require('../../driver/models/driver')
-const { pushNotificationTo_Driver } = require('../../driver/routers/driver')
+const { pushNotificationTo_User } = require('../../utils/index')
 const { CONSTANT_NOTIFICATION, CONSTANT_STATUS_BOOKING } = require('../../constant/index')
 
 const STATUS_BOOKING = {
@@ -118,7 +118,7 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
 
         const { lst_devicetoken } = req.body;
         console.log('lst_devicetoken', lst_devicetoken)
-        pushNotificationTo_Driver(
+        pushNotificationTo_User(
             lst_devicetoken,
             'Có hành khách muốn đi chuyến xe của bạn',
             'Hãy xác nhận bạn có thể đón khách hay không nhé ^^',
@@ -133,14 +133,13 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
         res.status(400).send(error)
     }
 })
-//f4hWrSKDYkI8u81l8HY88V:APA91bEzDWFcLKH8RNe1802c0xzFkETfuf3cbYf00ZqwSLp8o1-TQLea_vo7ShK-Ylso2WRoxhxZxGsjjPtsOqGzlncsEJGDUwNNtv4z_qMzTiHUgrRltrMNAgVPQnZ0jI3PSQeKGo0U
-pushNotificationTo_Driver(
-    ["eC-ntvuRL0LKm-4GWdIamJ:APA91bFDZq4KvVerLcSN0TVraVQ-BCo5_exzFXd102RnVRrdJW6I_q1QtazS_ACBqaL5UUKXjZzhtWM0isOMlvhD8jUJkmVOgVtm7GVQ98fhDx2idffeowGjwmOHx4iy1PGXY5UF6JsL"],
+pushNotificationTo_User(
+    ["f4hWrSKDYkI8u81l8HY88V:APA91bEzDWFcLKH8RNe1802c0xzFkETfuf3cbYf00ZqwSLp8o1-TQLea_vo7ShK-Ylso2WRoxhxZxGsjjPtsOqGzlncsEJGDUwNNtv4z_qMzTiHUgrRltrMNAgVPQnZ0jI3PSQeKGo0U"],
     'Có hành khách muốn đi chuyến xe của bạn',
     'Hãy xác nhận bạn có thể đón khách hay không nhé ^^',
     {
         type: CONSTANT_NOTIFICATION.CUSTOMER_REQUEST_TO_DRIVER,
-        booking_id: "6123690f14896711e328c7eb"
+        booking_id: "612e4d4437effaeb679e5ac0"
     })
 
 routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
