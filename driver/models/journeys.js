@@ -16,6 +16,9 @@ const journeys_Schema = mongoose.Schema({
     lst_booking_id: [{
         type: Schema.Types.ObjectId,
     }],
+    line_string: [{
+        type: String,
+    }],
     from: {
         loc: {
             type: { type: String },

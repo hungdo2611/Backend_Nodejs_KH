@@ -93,7 +93,7 @@ Journey_router.post('/journey/point/suggestion', auth, async (req, res) => {
 // accept booking 
 Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
     try {
-        const { booking_id, journey_id, price } = req.body
+        const { booking_id, journey_id, price, suggestion_pick } = req.body
         console.log("req.body", req.body)
         if (!booking_id || !journey_id || !price) {
             res.status(200).send({ err: true, data: 'missing param' })
@@ -132,7 +132,9 @@ Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
         // set data for booking
         data_booking.status = CONSTANT_STATUS_BOOKING.PROCESSING;
         data_booking.journey_id = journey_id;
-        data_booking.driver_id = req.user._id
+        data_booking.driver_id = req.user._id;
+        data_booking.price = price;
+        data_booking.suggestion_pick = suggestion_pick;
         const promise_save_booking = data_booking.save();
         //set data for journey
         data_journeys.lst_booking_id = [...data_journeys.lst_booking_id, booking_id]
@@ -143,7 +145,8 @@ Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
             'Đã có tài xế nhận đón bạn', 'Hãy bấm vào đây để xem chi tiết chuyến xe',
             {
                 type: CONSTANT_NOTIFICATION.DRIVER_ACEEPT_BOOKING,
-                journey_id: journey_id
+                journey_id: journey_id,
+                booking_id: booking_id
             })
         res.status(200).send({ err: false, data: { data_booking: 'success' } })
     } catch (error) {
@@ -228,6 +231,7 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
             time_end: req.body.time_end,
             price: req.body.price,
             price_shipping: req.body.price_shipping,
+            line_string: req.body.line_string,
             routes: {
                 "type": "LineString",
                 "coordinates": req.body.route

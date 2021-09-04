@@ -63,8 +63,8 @@ routerBooking.post('/booking/cancel', auth, async (req, res) => {
         }
         booking.reason = reason;
         booking.status = CONSTANT_STATUS_BOOKING.USER_CANCEL;
-        booking.save();
-        res.status(200).send({ err: false, data: "success" })
+        await booking.save();
+        res.status(200).send({ err: false, data: booking })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)
@@ -84,7 +84,19 @@ routerBooking.get('/booking/driver/getdatabooking', authDriver, async (req, res)
     }
 })
 
-
+routerBooking.get('/booking/current', auth, async (req, res) => {
+    try {
+        const currentBooking = await Booking
+            .findOne({ cus_id: req.user._id })
+            .or([{ 'status': CONSTANT_STATUS_BOOKING.FINDING_DRIVER }, { 'status': CONSTANT_STATUS_BOOKING.PROCESSING }])
+            .sort({ $natural: -1 })
+            .populate('driver_id', "phone avatar name");
+        res.status(200).send({ err: false, data: currentBooking })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
 
 routerBooking.post('/booking/create', auth, async (req, res) => {
     // Create a new user
@@ -111,6 +123,7 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
             status: CONSTANT_STATUS_BOOKING.FINDING_DRIVER,
             seat: req.body.seat,
             time_start: req.body.time_start,
+            range_price: req.body.range_price
 
         };
         const booking = new Booking(body_booking);

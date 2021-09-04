@@ -63,6 +63,30 @@ const booking_Schema = mongoose.Schema({
     reason: {
         type: String,
         required: false
+    },
+    suggestion_pick: {
+        lat: {
+            type: Number,
+            required: false
+        },
+        lng: {
+            type: Number,
+            required: false
+        },
+        address: {
+            type: String,
+            required: false
+        },
+    },
+    range_price: {
+        max_price: {
+            type: Number,
+            required: false
+        },
+        min_price: {
+            type: Number,
+            required: false
+        },
     }
 
 
