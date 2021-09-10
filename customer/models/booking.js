@@ -87,7 +87,10 @@ const booking_Schema = mongoose.Schema({
             type: Number,
             required: false
         },
-    }
+    },
+    line_string: [{
+        type: String,
+    }],
 
 
 

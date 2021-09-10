@@ -14,12 +14,6 @@ const Driver = require('../../driver/models/driver')
 const { pushNotificationTo_User } = require('../../utils/index')
 const { CONSTANT_NOTIFICATION, CONSTANT_STATUS_BOOKING } = require('../../constant/index')
 
-const STATUS_BOOKING = {
-    FINDING: 'FINDING',
-    PROCESS: 'PROCESS',
-    DONE: 'DONE',
-    CANCEL: 'CANCEL'
-}
 
 function getMinDistance(origin, route) {
     let arrRoute = []
@@ -83,14 +77,31 @@ routerBooking.get('/booking/driver/getdatabooking', authDriver, async (req, res)
         res.status(400).send(error)
     }
 })
+routerBooking.post('/booking/finish/:booking_id', auth, async (req, res) => {
+    try {
+        let booking_id = req.params.booking_id;
 
+        const currentBooking = await Booking.findOne({ _id: booking_id, });
+        if (currentBooking.status === CONSTANT_STATUS_BOOKING.PROCESSING) {
+            currentBooking.status = CONSTANT_STATUS_BOOKING.END;
+            await currentBooking.save();
+            res.status(200).send({ err: false, data: currentBooking })
+            return
+        }
+        res.status(200).send({ err: true, data: 'Đã có lỗi xảy ra. Vui lòng thử lại sau' })
+
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
 routerBooking.get('/booking/current', auth, async (req, res) => {
     try {
         const currentBooking = await Booking
             .findOne({ cus_id: req.user._id })
-            .or([{ 'status': CONSTANT_STATUS_BOOKING.FINDING_DRIVER }, { 'status': CONSTANT_STATUS_BOOKING.PROCESSING }])
+            .or([{ 'status': CONSTANT_STATUS_BOOKING.FINDING_DRIVER }, { 'status': CONSTANT_STATUS_BOOKING.PROCESSING }, { 'status': CONSTANT_STATUS_BOOKING.WAITING_DRIVER }])
             .sort({ $natural: -1 })
-            .populate('driver_id', "phone avatar name");
+            .populate('driver_id', "phone avatar name").populate('journey_id', 'line_string from to');
         res.status(200).send({ err: false, data: currentBooking })
     } catch (error) {
         console.log("error", error)
@@ -123,7 +134,8 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
             status: CONSTANT_STATUS_BOOKING.FINDING_DRIVER,
             seat: req.body.seat,
             time_start: req.body.time_start,
-            range_price: req.body.range_price
+            range_price: req.body.range_price,
+            line_string: req.body.line_string
 
         };
         const booking = new Booking(body_booking);

@@ -70,6 +70,28 @@ const journeys_Schema = mongoose.Schema({
             required: true
         }
     }],
+    lst_pickup_point: [{
+        booking_id: {
+            type: Schema.Types.ObjectId,
+        },
+        lat: {
+            type: Number,
+            required: false
+        },
+        lng: {
+            type: Number,
+            required: false
+        },
+        address: {
+            type: String,
+            required: false
+        },
+        info: {},
+        isPick: {
+            type: Boolean,
+
+        }
+    }],
     price_shipping: [{
         distance: {
             type: Number,
