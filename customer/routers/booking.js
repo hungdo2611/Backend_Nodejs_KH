@@ -13,7 +13,9 @@ const { request } = require('express')
 const Driver = require('../../driver/models/driver')
 const { pushNotificationTo_User } = require('../../utils/index')
 const { CONSTANT_NOTIFICATION, CONSTANT_STATUS_BOOKING } = require('../../constant/index')
-
+// Booking.deleteMany({}, (res) => {
+//     console.log('res delete', res)
+// })
 
 function getMinDistance(origin, route) {
     let arrRoute = []

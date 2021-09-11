@@ -45,7 +45,7 @@ function convertData(data) {
 Journey_router.post('/journey/point/suggestion', auth, async (req, res) => {
     try {
         const { userPoint, lst_coord } = req.body;
-        console.log("userPoint", userPoint)
+
         let lst_coord_format = []
         lst_coord.coordinates.map((coord, index) => {
             if (index < lst_coord.coordinates.length - 1) {
@@ -107,6 +107,10 @@ Journey_router.post('/journey/finish/:journey_id', auth, async (req, res) => {
         }, {
             new: true
         });
+        const lst_booking_id = journey.lst_pickup_point.map(dt => {
+            return dt.booking_id
+        })
+        const update = await Booking.updateMany({ _id: { $in: lst_booking_id }, status: { $ne: CONSTANT_STATUS_BOOKING.END } }, { status: CONSTANT_STATUS_BOOKING.END })
         res.status(200).send({ err: false, data: journey })
     } catch (error) {
         console.log("error", error)
@@ -210,7 +214,7 @@ Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
         const promise_save_booking = data_booking.save();
         //set data for journey
         data_journeys.lst_booking_id = [...data_journeys.lst_booking_id, booking_id];
-        const info_cus = { name: data_booking.cus_id.name, phone: data_booking.cus_id.phone, avatar: data_booking.cus_id.avatar, price: price, from: data_booking.from }
+        const info_cus = { name: data_booking.cus_id.name, phone: data_booking.cus_id.phone, avatar: data_booking.cus_id.avatar, price: price, from: data_booking.from, seat: data_booking.seat }
         data_journeys.lst_pickup_point = [...data_journeys.lst_pickup_point, { ...suggestion_pick, info: info_cus, isPick: false, booking_id: booking_id }]
         const promise_save_journey = data_journeys.save();
         const save_action = await Promise.all([promise_save_user, promise_save_booking, promise_save_journey])
@@ -222,7 +226,7 @@ Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
                 journey_id: journey_id,
                 booking_id: booking_id
             })
-        res.status(200).send({ err: false, data: { data_booking: 'success' } })
+        res.status(200).send({ err: false, data: { data_booking: 'success', data_journeys: data_journeys } })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)

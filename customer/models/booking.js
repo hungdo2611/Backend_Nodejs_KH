@@ -54,7 +54,6 @@ const booking_Schema = mongoose.Schema({
     },
     seat: {
         type: Number,
-        required: 2,
     },
     time_start: {
         type: Number,
