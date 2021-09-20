@@ -22,7 +22,6 @@ require('./db/db')
 
 
 
-
 const options = {
     definition: {
         openapi: '3.0.0',

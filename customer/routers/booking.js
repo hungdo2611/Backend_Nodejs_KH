@@ -57,6 +57,10 @@ routerBooking.post('/booking/cancel', auth, async (req, res) => {
             res.status(200).send({ err: true, data: "booking not found" })
             return
         }
+        if (booking && booking.status != CONSTANT_STATUS_BOOKING.FINDING_DRIVER) {
+            res.status(200).send({ err: true, data: "Chuyến không còn ở trạng thái chờ tài xế" })
+            return
+        }
         booking.reason = reason;
         booking.status = CONSTANT_STATUS_BOOKING.USER_CANCEL;
         await booking.save();
@@ -137,8 +141,9 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
             seat: req.body.seat,
             time_start: req.body.time_start,
             range_price: req.body.range_price,
-            line_string: req.body.line_string
-
+            line_string: req.body.line_string,
+            booking_type: req.body.booking_type,
+            orderInfo: req.body.orderInfo
         };
         const booking = new Booking(body_booking);
         await booking.save();
@@ -172,6 +177,7 @@ pushNotificationTo_User(
 routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
     // Create a new user
     try {
+        console.log("hello")
         const body_booking = {
             from: {
                 "loc": {
@@ -206,7 +212,59 @@ routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
                     $maxDistance: 5000
                 }
             },
-            time_end: { $gte: (Date.now() / 1000) >> 0 }
+            time_end: { $gte: (Date.now() / 1000) >> 0 },
+            journey_type: req.body.journey_type,
+            allow_Customer: true,
+        }).populate('driver_id', "phone avatar name device_token");
+        console.log('dataJourney', dataJourney)
+        res.status(201).send({ err: false, data: dataJourney });
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
+routerBooking.post('/booking/finding/driver_delivery', auth, async (req, res) => {
+    // Create a new user
+    try {
+        console.log("hello")
+        const body_booking = {
+            from: {
+                "loc": {
+                    "type": "Point",
+                    "coordinates": [req.body.from.lng, req.body.from.lat]
+                },
+            },
+            to: {
+                "loc": {
+                    "type": "Point",
+                    "coordinates": [req.body.to.lng, req.body.to.lat]
+                },
+            },
+
+        };
+        const dataJourney = await Journeys.find({
+            routes: {
+                $nearSphere: {
+                    $geometry: {
+                        type: "Point",
+                        coordinates: body_booking.from.loc.coordinates
+                    },
+                    $maxDistance: 2000
+                }
+            },
+            routes: {
+                $nearSphere: {
+                    $geometry: {
+                        type: "Point",
+                        coordinates: body_booking.to.loc.coordinates
+                    },
+                    $maxDistance: 5000
+                }
+            },
+            time_end: { $gte: (Date.now() / 1000) >> 0 },
+            journey_type: req.body.journey_type,
+            allow_Shipping: true,
+
         }).populate('driver_id', "phone avatar name device_token");
         console.log('dataJourney', dataJourney)
         res.status(201).send({ err: false, data: dataJourney });

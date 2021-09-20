@@ -7,6 +7,8 @@ const { isValidPhoneNumber } = require('libphonenumber-js')
 var admin = require("firebase-admin");
 const bcrypt = require('bcryptjs')
 
+
+
 const formatUser = (user) => {
     return {
         "is_active": user.is_active,
@@ -217,5 +219,6 @@ customer_router.post('/users/me/logoutall', auth, async (req, res) => {
         res.status(500).send(error)
     }
 })
+
 
 module.exports = customer_router;

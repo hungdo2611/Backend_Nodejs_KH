@@ -12,6 +12,10 @@ const booking_Schema = mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'journeys',
     },
+    booking_type: {
+        type: String,
+        require: true
+    },
     cus_id: {
         type: Schema.Types.ObjectId,
         ref: 'Customer',
@@ -90,6 +94,23 @@ const booking_Schema = mongoose.Schema({
     line_string: [{
         type: String,
     }],
+    orderInfo: {
+        phone_take_order: {
+            type: String,
+            required: false
+        },
+        note: {
+            type: String,
+            required: false
+        },
+        lst_image: [{
+            type: String,
+        }],
+        weight: {
+            type: String,
+            required: false
+        }
+    }
 
 
 

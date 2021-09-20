@@ -304,6 +304,7 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
                 address: req.body.to.address,
             },
             allow_Shipping: req.body.allow_Shipping,
+            allow_Customer: req.body.allow_Customer,
             distance: req.body.distance,
             time_start: req.body.time_start,
             time_end: req.body.time_end,
@@ -314,6 +315,7 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
                 "type": "LineString",
                 "coordinates": req.body.route
             },
+            journey_type: req.body.journey_type
         }
         const journey = new Journeys(body)
         await journey.save()

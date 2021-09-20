@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 var AutoIncrement = require('mongoose-sequence')(mongoose);
-const { CONSTANT_STATUS_JOUNEYS } = require('../../constant/index')
+const { CONSTANT_STATUS_JOUNEYS, CONSTANT_TYPE_JOURNEYS } = require('../../constant/index')
 
 const journeys_Schema = mongoose.Schema({
     journey_id: {
@@ -12,6 +12,10 @@ const journeys_Schema = mongoose.Schema({
     driver_id: {
         type: Schema.Types.ObjectId,
         ref: 'driver_schema'
+    },
+    journey_type: {
+        type: String,
+        require: true
     },
     lst_booking_id: [{
         type: Schema.Types.ObjectId,
@@ -57,6 +61,10 @@ const journeys_Schema = mongoose.Schema({
         required: true
     },
     allow_Shipping: {
+        type: Boolean,
+        required: true
+    },
+    allow_Customer: {
         type: Boolean,
         required: true
     },
