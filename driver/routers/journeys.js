@@ -111,6 +111,7 @@ Journey_router.post('/journey/finish/:journey_id', auth, async (req, res) => {
             return dt.booking_id
         })
         const update = await Booking.updateMany({ _id: { $in: lst_booking_id }, status: { $ne: CONSTANT_STATUS_BOOKING.END } }, { status: CONSTANT_STATUS_BOOKING.END })
+        console.log("update", update)
         res.status(200).send({ err: false, data: journey })
     } catch (error) {
         console.log("error", error)
@@ -136,7 +137,40 @@ Journey_router.post('/journey/start/:journey_id', auth, async (req, res) => {
     }
 })
 
-// accept booking 
+// drop off booking 
+Journey_router.post('/journey/dropoff/customer', auth, async (req, res) => {
+    try {
+        const { booking_id, journey_id } = req.body;
+        const promise_booking = Booking.findOneAndUpdate({ _id: booking_id }, { status: CONSTANT_STATUS_BOOKING.END }).populate("cus_id", 'device_token');;
+        let promise_journey = Journeys.findOne({ _id: journey_id });
+        const all_data = await Promise.all([promise_booking, promise_journey]);
+        let data_booking = all_data[0];
+        let data_journeys = all_data[1];
+        console.log("data_journeys.lst_pickup_point", data_journeys.lst_pickup_point)
+        const index = data_journeys.lst_pickup_point.findIndex(dt => {
+            return dt.booking_id == booking_id;
+        })
+        data_journeys.lst_pickup_point[index].isPick = 'drop';
+        await data_journeys.save();
+        const titleNoti = data_booking.orderInfo ? 'Tài xế đã đến điểm giao hàng' : 'Chuyến đi đã kết thúc';
+        const contentNoti = data_booking.orderInfo ? 'Hãy chắc chắn là người nhận đã sẵn sáng nhận hàng nhé' : 'Bạn cảm thấy như thế nào'
+        pushNotificationTo_User(
+            [data_booking.cus_id.device_token],
+            titleNoti, contentNoti,
+            {
+                type: CONSTANT_NOTIFICATION.DRIVER_DROP_OFF_CUSTOMER,
+                journey_id: journey_id,
+                booking_id: booking_id
+            })
+        res.status(200).send({ err: false, data: data_journeys })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+
+})
+
+// pickup booking 
 Journey_router.post('/journey/pickup/customer', auth, async (req, res) => {
     try {
         const { booking_id, journey_id } = req.body;
@@ -151,9 +185,11 @@ Journey_router.post('/journey/pickup/customer', auth, async (req, res) => {
         })
         data_journeys.lst_pickup_point[index].isPick = true;
         await data_journeys.save();
+        const titleNoti = data_booking.orderInfo ? 'Tài xế đã đến lấy hàng' : 'Tài xế đã đến đón bạn';
+        const contentNoti = data_booking.orderInfo ? 'Hãy gửi hàng cho tài xế ngày nhé' : 'Hãy tận hưởng chuyến đi nhé ^^'
         pushNotificationTo_User(
             [data_booking.cus_id.device_token],
-            'Tài xế đã đến đón bạn', 'Hãy tận hưởng chuyến đi nhé ^^',
+            titleNoti, contentNoti,
             {
                 type: CONSTANT_NOTIFICATION.DRIVER_PICK_UP_CUSTOMER,
                 journey_id: journey_id,
@@ -210,12 +246,11 @@ Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
         data_booking.driver_id = req.user._id;
         data_booking.price = price;
         data_booking.suggestion_pick = suggestion_pick;
-        console.log("data_booking accept", data_booking)
         const promise_save_booking = data_booking.save();
         //set data for journey
         data_journeys.lst_booking_id = [...data_journeys.lst_booking_id, booking_id];
         const info_cus = { name: data_booking.cus_id.name, phone: data_booking.cus_id.phone, avatar: data_booking.cus_id.avatar, price: price, from: data_booking.from, seat: data_booking.seat }
-        data_journeys.lst_pickup_point = [...data_journeys.lst_pickup_point, { ...suggestion_pick, info: info_cus, isPick: false, booking_id: booking_id }]
+        data_journeys.lst_pickup_point = [...data_journeys.lst_pickup_point, { ...suggestion_pick, info: info_cus, isPick: false, booking_id: booking_id, booking_type: data_booking.booking_type, orderInfo: data_booking.orderInfo }]
         const promise_save_journey = data_journeys.save();
         const save_action = await Promise.all([promise_save_user, promise_save_booking, promise_save_journey])
         pushNotificationTo_User(

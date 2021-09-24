@@ -52,13 +52,13 @@ routerBooking.post('/booking/cancel', auth, async (req, res) => {
         const { id, reason } = req.body
         const booking = await Booking.findOne({
             _id: id
-        })
+        }).populate("cus_id", 'phone name avatar')
         if (!booking) {
             res.status(200).send({ err: true, data: "booking not found" })
             return
         }
         if (booking && booking.status != CONSTANT_STATUS_BOOKING.FINDING_DRIVER) {
-            res.status(200).send({ err: true, data: "Chuyến không còn ở trạng thái chờ tài xế" })
+            res.status(200).send({ err: true, message: "Không thể huỷ! Chuyến đã có tài xế nhận", data: booking })
             return
         }
         booking.reason = reason;
