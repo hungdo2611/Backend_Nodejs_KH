@@ -21,7 +21,6 @@ const formatUser = (user) => {
         "phone": user.phone,
         "join_date": user.join_date,
         "name": user.name,
-
         "driver_id": user.driver_id,
 
     }
@@ -47,10 +46,9 @@ async function addCoinToDriver(_id, amount) {
  */
 
 //get service charge 
-driver_router.get('/driver/service/charge', async (req, res) => {
+driver_router.get('/driver/service/charge', auth, async (req, res) => {
     try {
-
-        res.status(200).send({ data: CONSTANT_DATA.SERVICE_CHARGE, err: false })
+        res.status(200).send({ data: CONSTANT_DATA.SERVICE_CHARGE, err: false, user_info: req.user, token: req.token })
 
 
     } catch (error) {

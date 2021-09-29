@@ -2,6 +2,8 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 var AutoIncrement = require('mongoose-sequence')(mongoose);
+const mongoosePaginate = require('mongoose-paginate-v2');
+
 const { CONSTANT_STATUS_JOUNEYS, CONSTANT_TYPE_JOURNEYS } = require('../../constant/index')
 
 const journeys_Schema = mongoose.Schema({
@@ -118,6 +120,8 @@ const journeys_Schema = mongoose.Schema({
 })
 
 journeys_Schema.plugin(AutoIncrement, { id: 'journeys_seq', inc_field: 'journey_id' })
+journeys_Schema.plugin(mongoosePaginate);
+
 journeys_Schema.index({ "routes": "2dsphere" });
 
 const Journeys = mongoose.model('journeys', journeys_Schema)

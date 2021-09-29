@@ -277,6 +277,26 @@ Journey_router.get('/journey/current', auth, async (req, res) => {
         res.status(400).send(error)
     }
 })
+// get history journey
+Journey_router.get('/journey/history', auth, async (req, res) => {
+    try {
+        const { page_nunmber, page_size, type } = req.query;
+        if (!page_nunmber || !page_size) {
+            res.status(400).send({ err: true, data: 'missing param' })
+        }
+        if (type) {
+            const history = await Journeys.paginate({ driver_id: req.user._id, status: type }, { page: page_nunmber, limit: page_size, sort: { $natural: -1 } });
+            res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
+            return
+        }
+        const history = await Journeys.paginate({ driver_id: req.user._id, }, { page: page_nunmber, limit: page_size, sort: { $natural: -1 } });
+        console.log("history", history)
+        res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
 //register api
 Journey_router.post('/journey/create', auth, async (req, res) => {
     // Create journey

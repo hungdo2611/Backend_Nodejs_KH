@@ -16,6 +16,7 @@
     "mask-phone-number": "^1.0.1",
     "mongodb": "^3.6.9",
     "mongoose": "^5.12.13",
+    "mongoose-paginate-v2": "^1.4.2",
     "mongoose-sequence": "^5.3.1",
     "multer": "^1.4.3",
     "redis": "^3.1.2",
