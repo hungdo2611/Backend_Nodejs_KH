@@ -1,6 +1,6 @@
 const express = require('express')
 const Journeys = require('../models/journeys')
-const auth = require('../middleware/auth')
+const { auth, authTransaction } = require('../middleware/auth')
 const { CONSTANT_STATUS_JOUNEYS } = require('../../constant/index')
 const Booking = require('../../customer/models/booking')
 const { pushNotificationTo_User } = require('../../utils')
@@ -202,10 +202,9 @@ Journey_router.post('/journey/pickup/customer', auth, async (req, res) => {
     }
 
 })
-Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
+Journey_router.post('/journey/accept/booking', authTransaction, async (req, res) => {
     try {
         const { booking_id, journey_id, price, suggestion_pick } = req.body
-        console.log("req.body", req.body)
         if (!booking_id || !journey_id || !price) {
             res.status(200).send({ err: true, data: 'missing param' })
         }
@@ -218,6 +217,7 @@ Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
             return
         }
         user.point = user.point - formatPrice * SERVICE_CHARGE;
+        console.log("user.lst_transaction", user)
         user.lst_transaction = [...user.lst_transaction, {
             time: (Date.now() / 1000) >> 0,
             type: TYPE_TRANSACTION.ACCEPT_BOOKING,

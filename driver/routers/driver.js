@@ -1,6 +1,6 @@
 const express = require('express')
 const Driver = require('../models/driver')
-const auth = require('../middleware/auth')
+const { auth } = require('../middleware/auth')
 const mongoose = require('mongoose');
 
 const driver_router = express.Router()

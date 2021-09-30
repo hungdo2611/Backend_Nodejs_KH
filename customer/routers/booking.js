@@ -70,7 +70,7 @@ routerBooking.post('/booking/cancel', auth, async (req, res) => {
         res.status(400).send(error)
     }
 })
-routerBooking.get('/booking/driver/getdatabooking', authDriver, async (req, res) => {
+routerBooking.get('/booking/driver/getdatabooking', authDriver.auth, async (req, res) => {
     try {
 
         const booking_id = req.query.booking_id
