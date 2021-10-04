@@ -13,6 +13,7 @@ const customer_router = require('./customer/routers/user')
 const { driver_router } = require('./driver/routers/driver')
 const Journey_router = require('./driver/routers/journeys')
 const routerBooking = require("./customer/routers/booking")
+const notification_router = require("./driver/routers/notification_router")
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require("swagger-jsdoc")
 const port = process.env.PORT
@@ -45,6 +46,7 @@ app.use(customer_router)
 app.use(driver_router)
 app.use(Journey_router)
 app.use(routerBooking)
+app.use(notification_router)
 
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs))

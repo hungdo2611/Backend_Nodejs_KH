@@ -1,6 +1,7 @@
 const express = require('express')
 const Booking = require('../models/booking')
 const Journeys = require('../../driver/models/journeys')
+const Notification_driver = require('../../driver/models/notification')
 const auth = require('../middleware/auth')
 const authDriver = require('../../driver/middleware/auth')
 const { findingJouneys } = require('../worker/workerBooking')
@@ -148,11 +149,10 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
         const booking = new Booking(body_booking);
         await booking.save();
 
-        const { lst_devicetoken } = req.body;
-        console.log('lst_devicetoken', lst_devicetoken)
+        const { lst_devicetoken, list_driverId } = req.body;
         pushNotificationTo_User(
             lst_devicetoken,
-            'Có hành khách muốn đi chuyến xe của bạn',
+            'Có hành khách yêu cầu',
             'Hãy xác nhận bạn có thể đón khách hay không nhé ^^',
             {
                 type: CONSTANT_NOTIFICATION.CUSTOMER_REQUEST_TO_DRIVER,
@@ -165,14 +165,14 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
         res.status(400).send(error)
     }
 })
-pushNotificationTo_User(
-    ["f4hWrSKDYkI8u81l8HY88V:APA91bEzDWFcLKH8RNe1802c0xzFkETfuf3cbYf00ZqwSLp8o1-TQLea_vo7ShK-Ylso2WRoxhxZxGsjjPtsOqGzlncsEJGDUwNNtv4z_qMzTiHUgrRltrMNAgVPQnZ0jI3PSQeKGo0U"],
-    'Có hành khách muốn đi chuyến xe của bạn',
-    'Hãy xác nhận bạn có thể đón khách hay không nhé ^^',
-    {
-        type: CONSTANT_NOTIFICATION.CUSTOMER_REQUEST_TO_DRIVER,
-        booking_id: "612e4d4437effaeb679e5ac0"
-    })
+// pushNotificationTo_User(
+//     ["f4hWrSKDYkI8u81l8HY88V:APA91bEzDWFcLKH8RNe1802c0xzFkETfuf3cbYf00ZqwSLp8o1-TQLea_vo7ShK-Ylso2WRoxhxZxGsjjPtsOqGzlncsEJGDUwNNtv4z_qMzTiHUgrRltrMNAgVPQnZ0jI3PSQeKGo0U"],
+//     'Có hành khách muốn đi chuyến xe của bạn',
+//     'Hãy xác nhận bạn có thể đón khách hay không nhé ^^',
+//     {
+//         type: CONSTANT_NOTIFICATION.CUSTOMER_REQUEST_TO_DRIVER,
+//         booking_id: "612e4d4437effaeb679e5ac0"
+//     })
 
 routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
     // Create a new user

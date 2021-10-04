@@ -73,11 +73,11 @@ const journeys_Schema = mongoose.Schema({
     price: [{
         distance: {
             type: Number,
-            required: true
+            required: false
         },
         value: {
             type: Number,
-            required: true
+            required: false
         }
     }],
     lst_pickup_point: [{
