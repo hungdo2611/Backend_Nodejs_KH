@@ -226,7 +226,6 @@ routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
 routerBooking.post('/booking/finding/driver_delivery', auth, async (req, res) => {
     // Create a new user
     try {
-        console.log("hello")
         const body_booking = {
             from: {
                 "loc": {
@@ -273,6 +272,38 @@ routerBooking.post('/booking/finding/driver_delivery', auth, async (req, res) =>
         res.status(400).send(error)
     }
 })
-
+routerBooking.post('/booking/near/user', auth, async (req, res) => {
+    // Create a new user
+    try {
+        const { page_number, page_size } = req.query;
+        if (!page_number || !page_size) {
+            res.status(400).send({ err: true, data: 'missing param' })
+        }
+        const body = {
+            location: {
+                "loc": {
+                    "type": "Point",
+                    "coordinates": [req.body.location.lng, req.body.location.lat]
+                },
+            },
+        };
+        const dataJourney = await Journeys.paginate({
+            routes: {
+                $nearSphere: {
+                    $geometry: {
+                        type: "Point",
+                        coordinates: body.location.loc.coordinates
+                    },
+                    $maxDistance: 2000
+                }
+            },
+            time_end: { $gte: (Date.now() / 1000) >> 0 },
+        }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_number, limit: page_size, forceCountFn: true });
+        res.status(200).send({ err: false, data: dataJourney.docs, total: dataJourney.totalDocs })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
 
 module.exports = routerBooking;
