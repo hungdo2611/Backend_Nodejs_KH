@@ -13,7 +13,7 @@ const geolib = require('geolib');
 const { request } = require('express')
 const Driver = require('../../driver/models/driver')
 const { pushNotificationTo_User } = require('../../utils/index')
-const { CONSTANT_NOTIFICATION, CONSTANT_STATUS_BOOKING } = require('../../constant/index')
+const { CONSTANT_NOTIFICATION, CONSTANT_STATUS_BOOKING, CONSTANT_STATUS_JOUNEYS, CONSTANT_TYPE_BOOKING } = require('../../constant/index')
 // Booking.deleteMany({}, (res) => {
 //     console.log('res delete', res)
 // })
@@ -294,12 +294,45 @@ routerBooking.post('/booking/near/user', auth, async (req, res) => {
                         type: "Point",
                         coordinates: body.location.loc.coordinates
                     },
-                    $maxDistance: 2000
+                    $maxDistance: 6000
                 }
             },
+            status: CONSTANT_STATUS_JOUNEYS.WAITING,
             time_end: { $gte: (Date.now() / 1000) >> 0 },
         }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_number, limit: page_size, forceCountFn: true });
         res.status(200).send({ err: false, data: dataJourney.docs, total: dataJourney.totalDocs })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
+// get history booking
+routerBooking.get('/booking/history', auth, async (req, res) => {
+    try {
+        const { page_nunmber, page_size, type } = req.query;
+        console.log("req.query", page_nunmber)
+        if (!page_nunmber || !page_size) {
+            console.log("abcd")
+            res.status(400).send({ err: true, data: 'missing param' })
+            return
+        }
+        if (type) {
+            if (type === 'delivery') {
+                const history = await Booking.paginate({ cus_id: req.user._id, $or: [{ status: CONSTANT_TYPE_BOOKING.COACH_DELIVERY_CAR }, { status: CONSTANT_TYPE_BOOKING.HYBIRD_DELIVERY_CAR }] }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_nunmber, limit: page_size, forceCountFn: true, sort: { $natural: -1 } });
+                console.log("history2", history)
+
+                res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
+                return
+            }
+            const history = await Booking.paginate({ cus_id: req.user._id, status: type }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_nunmber, limit: page_size, forceCountFn: true, sort: { $natural: -1 } });
+            console.log("history1", history)
+
+            res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
+            return
+        }
+        const history = await Booking.paginate({ cus_id: req.user._id, }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_nunmber, limit: page_size, forceCountFn: true, sort: { $natural: -1 } });
+        console.log("history", history)
+        res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)

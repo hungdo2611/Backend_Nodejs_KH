@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 var AutoIncrement = require('mongoose-sequence')(mongoose);
 const Schema = mongoose.Schema;
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const booking_Schema = mongoose.Schema({
     _id: Schema.Types.ObjectId,
@@ -117,6 +118,7 @@ const booking_Schema = mongoose.Schema({
 })
 booking_Schema.plugin(AutoIncrement, { id: 'booking_seq', inc_field: 'booking_id' })
 
+booking_Schema.plugin(mongoosePaginate);
 
 
 booking_Schema.methods.generateAuthToken = async function () {
