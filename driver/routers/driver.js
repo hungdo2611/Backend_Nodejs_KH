@@ -206,7 +206,7 @@ driver_router.post('/driver/profile', auth, async (req, res) => {
         const responeDt = formatUser(req.user);
 
 
-        res.status(200).send({ data: responeDt, err: false })
+        res.status(200).send({ data: { ...responeDt,  token: req.token  }, err: false })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)

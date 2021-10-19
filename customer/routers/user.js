@@ -6,6 +6,7 @@ const parsePhoneNumber = require('libphonenumber-js')
 const { isValidPhoneNumber } = require('libphonenumber-js')
 var admin = require("firebase-admin");
 const bcrypt = require('bcryptjs')
+const mongoose = require('mongoose')
 
 
 
@@ -19,8 +20,8 @@ const formatUser = (user) => {
         "phone": user.phone,
         "join_date": user.join_date,
         "name": user.name,
-
         "cus_id": user.cus_id,
+
 
     }
 }
@@ -94,6 +95,7 @@ customer_router.post('/users/register', async (req, res) => {
         }
         const phoneNumber = parsePhoneNumber(req.body.phone, 'VN')
         const bodyrequest = {
+            "_id": new mongoose.Types.ObjectId(),
             phone: phoneNumber.number,
             join_date: Date.now(),
             is_active: true,
@@ -111,7 +113,7 @@ customer_router.post('/users/register', async (req, res) => {
         res.status(400).send(error)
     }
 })
-//update profile api
+//update password
 customer_router.post('/users/profile', auth, async (req, res) => {
     // Create a new user
     try {
@@ -131,7 +133,27 @@ customer_router.post('/users/profile', auth, async (req, res) => {
         await req.user.save();
         const responeDt = formatUser(req.user);
 
-        res.status(200).send({ data: responeDt, err: false })
+        res.status(200).send({ data: { ...responeDt, token: req.token }, err: false })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send(error)
+    }
+})
+customer_router.post('/users/info', auth, async (req, res) => {
+    // Create a new user
+    try {
+        // const body = {
+        //     password: '',
+        //     name: ''
+        // }
+
+        req.user.name = req.body.name;
+        req.user.avatar = req.body.avatar;
+
+        await req.user.save();
+        const responeDt = formatUser(req.user);
+
+        res.status(200).send({ data: { ...responeDt, token: req.token }, err: false })
     } catch (error) {
         console.log("error", error)
         res.status(400).send(error)
