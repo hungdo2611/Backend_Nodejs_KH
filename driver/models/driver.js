@@ -65,6 +65,10 @@ const driver_Schema = mongoose.Schema({
             type: Number,
         }
     }],
+    verified_status: {
+        type: Schema.Types.ObjectId,
+        ref: 'license_schema'
+    },
     tokens: [{
         token: {
             type: String,

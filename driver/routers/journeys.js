@@ -7,7 +7,13 @@ const { pushNotificationTo_User } = require('../../utils')
 const { CONSTANT_STATUS_BOOKING, SERVICE_CHARGE, TYPE_TRANSACTION, CONSTANT_NOTIFICATION } = require('../../constant')
 const Journey_router = express.Router()
 const geolib = require('geolib');
+
+const mongoose = require('mongoose')
+
 const { request } = require('express')
+
+
+
 function getPointNearest(minValue, userCoord, Arr) {
     console.log("Arr", Arr)
     console.log("userCoord", userCoord)
@@ -92,7 +98,8 @@ Journey_router.post('/journey/point/suggestion', auth, async (req, res) => {
 
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+        res.status(400).send({ err: true, error })
+
     }
 })
 // pick up customer 
@@ -115,7 +122,8 @@ Journey_router.post('/journey/finish/:journey_id', auth, async (req, res) => {
         res.status(200).send({ err: false, data: journey })
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+        res.status(400).send({ err: true, error })
+
     }
 })
 
@@ -133,7 +141,8 @@ Journey_router.post('/journey/start/:journey_id', auth, async (req, res) => {
 
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+        res.status(400).send({ err: true, error })
+
     }
 })
 
@@ -165,7 +174,8 @@ Journey_router.post('/journey/dropoff/customer', auth, async (req, res) => {
         res.status(200).send({ err: false, data: data_journeys })
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+        res.status(400).send({ err: true, error })
+
     }
 
 })
@@ -198,45 +208,55 @@ Journey_router.post('/journey/pickup/customer', auth, async (req, res) => {
         res.status(200).send({ err: false, data: data_journeys })
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+        res.status(400).send({ err: true, error })
+
     }
 
 })
 Journey_router.post('/journey/accept/booking', authTransaction, async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
+        const opts = { session, returnOriginal: false };
+
         const { booking_id, journey_id, price, suggestion_pick } = req.body
         if (!booking_id || !journey_id || !price) {
+            session.endSession();
             res.status(200).send({ err: true, data: 'missing param' })
+            return
         }
         //
         let user = req.user;
         const formatPrice = Math.abs(price);
         const value_service_charge = formatPrice * SERVICE_CHARGE;
         if (user.point < value_service_charge) {
+            session.endSession();
             res.status(200).send({ err: true, data: null, message: 'Số dự coin không đủ để nhận chuyến đi này. Vui lòng nạp thêm coin để có thể nhận thêm chuyến đi này' })
             return
         }
         user.point = user.point - formatPrice * SERVICE_CHARGE;
-        console.log("user.lst_transaction", user)
-        user.lst_transaction = [...user.lst_transaction, {
-            time: (Date.now() / 1000) >> 0,
-            type: TYPE_TRANSACTION.ACCEPT_BOOKING,
-            content: `Trừ coin để nhận chuyến`,
-            value: value_service_charge
-        }]
-        const promise_save_user = user.save();
+        // console.log("user.lst_transaction", user)
+        // user.lst_transaction = [...user.lst_transaction, {
+        //     time: (Date.now() / 1000) >> 0,
+        //     type: TYPE_TRANSACTION.ACCEPT_BOOKING,
+        //     content: `Trừ coin để nhận chuyến`,
+        //     value: value_service_charge
+        // }]
+        const promise_save_user = user.save(opts);
         //
         let promise_booking = Booking.findOne({ _id: booking_id }).populate("cus_id", 'device_token name phone avatar');
         let promise_journey = Journeys.findOne({ _id: journey_id });
         const all_data = await Promise.all([promise_booking, promise_journey]);
         const data_booking = all_data[0];
         const data_journeys = all_data[1];
-        console.log("data_booking", data_booking)
+        console.log("data_journeys", data_journeys)
         if (data_booking.status != CONSTANT_STATUS_BOOKING.FINDING_DRIVER) {
+            session.endSession();
             res.status(200).send({ err: true, data: null, message: 'Chuyến đi này đã có tài xế khác nhận rồi. Hãy nhanh tay nhận chuyến ở lần sau nhé ^^' })
             return
         }
         if (data_journeys.status === CONSTANT_STATUS_JOUNEYS.END || data_journeys.status === CONSTANT_STATUS_JOUNEYS.CANCEL) {
+            session.endSession();
             res.status(200).send({ err: true, data: null, message: 'Bạn không thể nhận chuyến đi này vì hành trình của bạn đã kết thúc' })
             return
         }
@@ -246,12 +266,12 @@ Journey_router.post('/journey/accept/booking', authTransaction, async (req, res)
         data_booking.driver_id = req.user._id;
         data_booking.price = price;
         data_booking.suggestion_pick = suggestion_pick;
-        const promise_save_booking = data_booking.save();
+        const promise_save_booking = data_booking.save(opts);
         //set data for journey
         data_journeys.lst_booking_id = [...data_journeys.lst_booking_id, booking_id];
         const info_cus = { name: data_booking.cus_id.name, phone: data_booking.cus_id.phone, avatar: data_booking.cus_id.avatar, price: price, from: data_booking.from, seat: data_booking.seat }
         data_journeys.lst_pickup_point = [...data_journeys.lst_pickup_point, { ...suggestion_pick, info: info_cus, isPick: false, booking_id: booking_id, booking_type: data_booking.booking_type, orderInfo: data_booking.orderInfo }]
-        const promise_save_journey = data_journeys.save();
+        const promise_save_journey = data_journeys.save(opts);
         const save_action = await Promise.all([promise_save_user, promise_save_booking, promise_save_journey])
         pushNotificationTo_User(
             [data_booking.cus_id.device_token],
@@ -261,10 +281,15 @@ Journey_router.post('/journey/accept/booking', authTransaction, async (req, res)
                 journey_id: journey_id,
                 booking_id: booking_id
             })
+        await session.commitTransaction();
+        session.endSession();
         res.status(200).send({ err: false, data: { data_booking: 'success', data_journeys: data_journeys } })
     } catch (error) {
-        console.log("error", error)
-        res.status(400).send(error)
+        console.log("error123", error)
+        await session.abortTransaction();
+        session.endSession();
+        res.status(400).send({ err: true, error })
+
     }
 })
 // get current journey
@@ -274,7 +299,8 @@ Journey_router.get('/journey/current', auth, async (req, res) => {
         res.status(200).send({ err: false, data: currentJourney })
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+        res.status(400).send({ err: true, error })
+
     }
 })
 // get history journey
@@ -294,53 +320,24 @@ Journey_router.get('/journey/history', auth, async (req, res) => {
         res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+        res.status(400).send({ err: true, error })
+
     }
 })
 //register api
 Journey_router.post('/journey/create', auth, async (req, res) => {
     // Create journey
     try {
-        /*
-        const body ={
-            driver_id: req.user._id,
-            from: {
-                "loc": {
-                    "type": "Point",
-                    "coordinates": [105.7780682087555, 21.027331696466383]
-                },
-                // lat: 20.96482878714222,
-                // lng: 105.84217557982575,
-                address: "Bến xe Mỹ Đình",
-                // province: 'HN'
-            },
-            {
-                "loc": {
-                    "type": "Point",
-                    "coordinates": [105.63181272653117, 21.292436138115065]
-                },
-                // lat: 21.306707419857357,
-                // lng: 105.61272817310709,
-                address: "Big C Vĩnh Phúc",
-                // province: 'VP'
-            },
-            distance: 44000,
-
-            time_start: 1623293947000,
-            time_end: 1625885947000,
-            allow_Shipping:true,
-            price: [
-            ],
-            price_shipping:[
-
-            ]
-            routes: {
-                "type": "LineString",
-                "coordinates": newRoutes
-            },
+        const status = {
+            VERIFYING: 'VERIFYING',
+            VERIFIED: 'VERIFIED',
+            FAILED: 'FAILED'
         }
-        */
-        console.log("req.body", req.body)
+        const verify_status = req?.user?.verified_status?.status;
+        if (!verify_status || verify_status !== status.VERIFIED) {
+            res.status(400).send({ err: true, data: 'Not Allow' })
+            return
+        }
         const body = {
             driver_id: req.user._id,
             from: {
@@ -377,7 +374,8 @@ Journey_router.post('/journey/create', auth, async (req, res) => {
         res.status(200).send({ err: false, data: journey })
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+        res.status(400).send({ err: true, error })
+
     }
 })
 

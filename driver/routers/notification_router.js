@@ -11,7 +11,8 @@ notification_router.get('/notification', auth, async (req, res) => {
         res.status(200).send({ err: false, data: notifications.docs, total: notifications.totalDocs })
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+                res.status(400).send({ err: true, error })
+
     }
 })
 

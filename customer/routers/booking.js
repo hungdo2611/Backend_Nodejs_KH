@@ -68,7 +68,7 @@ routerBooking.post('/booking/cancel', auth, async (req, res) => {
         res.status(200).send({ err: false, data: booking })
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+        res.status(400).send({ err: true, error })
     }
 })
 routerBooking.get('/booking/driver/getdatabooking', authDriver.auth, async (req, res) => {
@@ -81,7 +81,8 @@ routerBooking.get('/booking/driver/getdatabooking', authDriver.auth, async (req,
 
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+                res.status(400).send({ err: true, error })
+
     }
 })
 routerBooking.post('/booking/finish/:booking_id', auth, async (req, res) => {
@@ -99,7 +100,8 @@ routerBooking.post('/booking/finish/:booking_id', auth, async (req, res) => {
 
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+                res.status(400).send({ err: true, error })
+
     }
 })
 routerBooking.get('/booking/current', auth, async (req, res) => {
@@ -112,7 +114,8 @@ routerBooking.get('/booking/current', auth, async (req, res) => {
         res.status(200).send({ err: false, data: currentBooking })
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+                res.status(400).send({ err: true, error })
+
     }
 })
 
@@ -162,7 +165,8 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
         res.status(200).send({ err: false, data: booking })
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+                res.status(400).send({ err: true, error })
+
     }
 })
 // pushNotificationTo_User(
@@ -220,7 +224,8 @@ routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
         res.status(201).send({ err: false, data: dataJourney });
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+                res.status(400).send({ err: true, error })
+
     }
 })
 routerBooking.post('/booking/finding/driver_delivery', auth, async (req, res) => {
@@ -269,7 +274,8 @@ routerBooking.post('/booking/finding/driver_delivery', auth, async (req, res) =>
         res.status(201).send({ err: false, data: dataJourney });
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+                res.status(400).send({ err: true, error })
+
     }
 })
 routerBooking.post('/booking/near/user', auth, async (req, res) => {
@@ -303,7 +309,8 @@ routerBooking.post('/booking/near/user', auth, async (req, res) => {
         res.status(200).send({ err: false, data: dataJourney.docs, total: dataJourney.totalDocs })
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+                res.status(400).send({ err: true, error })
+
     }
 })
 // get history booking
@@ -335,7 +342,8 @@ routerBooking.get('/booking/history', auth, async (req, res) => {
         res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
     } catch (error) {
         console.log("error", error)
-        res.status(400).send(error)
+                res.status(400).send({ err: true, error })
+
     }
 })
 
