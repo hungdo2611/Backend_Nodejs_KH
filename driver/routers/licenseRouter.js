@@ -23,6 +23,9 @@ license_router.post('/license/update', auth, async (req, res) => {
 
     }
 })
+
+/// phê duyệt license, require admin auth
+
 license_router.post('/license/approve', async (req, res) => {
     try {
         const { license_id } = req.body;

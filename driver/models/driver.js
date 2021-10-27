@@ -51,20 +51,7 @@ const driver_Schema = mongoose.Schema({
         default: 0
 
     },
-    lst_transaction: [{
-        time: {
-            type: Number,
-        },
-        type: {
-            type: String,
-        },
-        content: {
-            type: String,
-        },
-        value: {
-            type: Number,
-        }
-    }],
+
     verified_status: {
         type: Schema.Types.ObjectId,
         ref: 'license_schema'

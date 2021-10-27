@@ -7,7 +7,7 @@ const auth = async (req, res, next) => {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY_DRIVER)
 
-        const user = await Driver.findOne({ _id: data._id }, { lst_transaction: 0, tokens: 0, password: 0, }).populate("verified_status", "status")
+        const user = await Driver.findOne({ _id: data._id }, { tokens: 0, password: 0, }).populate("verified_status", "status")
         console.log("user", user)
         if (!user) {
             throw new Error()

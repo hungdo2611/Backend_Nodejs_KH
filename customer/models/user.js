@@ -24,6 +24,10 @@ const customer_Schema = mongoose.Schema({
             }
         }
     },
+    coupon_used: [{
+        type: String,
+        required: false,
+    }],
     name: {
         type: String,
         required: false,

@@ -11,13 +11,13 @@ admin.initializeApp({
 
 const customer_router = require('./customer/routers/user')
 const routerBooking = require("./customer/routers/booking")
-
+const coupon_code_router = require('./customer/routers/coupon_router')
 
 const { driver_router } = require('./driver/routers/driver')
 const Journey_router = require('./driver/routers/journeys')
 const notification_router = require("./driver/routers/notification_router")
 const license_router = require('./driver/routers/licenseRouter')
-
+const transaction_router = require('./driver/routers/transactionRouter')
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require("swagger-jsdoc")
 const port = process.env.PORT
@@ -52,7 +52,8 @@ app.use(Journey_router)
 app.use(routerBooking)
 app.use(notification_router)
 app.use(license_router)
-
+app.use(transaction_router)
+app.use(coupon_code_router)
 
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs))

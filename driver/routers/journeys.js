@@ -3,6 +3,7 @@ const Journeys = require('../models/journeys')
 const { auth, authTransaction } = require('../middleware/auth')
 const { CONSTANT_STATUS_JOUNEYS } = require('../../constant/index')
 const Booking = require('../../customer/models/booking')
+const Transaction = require('../models/transaction')
 const { pushNotificationTo_User } = require('../../utils')
 const { CONSTANT_STATUS_BOOKING, SERVICE_CHARGE, TYPE_TRANSACTION, CONSTANT_NOTIFICATION } = require('../../constant')
 const Journey_router = express.Router()
@@ -215,7 +216,6 @@ Journey_router.post('/journey/pickup/customer', auth, async (req, res) => {
 })
 Journey_router.post('/journey/accept/booking', authTransaction, async (req, res) => {
     const session = await mongoose.startSession();
-    session.startTransaction();
     try {
         const opts = { session, returnOriginal: false };
 
@@ -234,59 +234,69 @@ Journey_router.post('/journey/accept/booking', authTransaction, async (req, res)
             res.status(200).send({ err: true, data: null, message: 'Số dự coin không đủ để nhận chuyến đi này. Vui lòng nạp thêm coin để có thể nhận thêm chuyến đi này' })
             return
         }
-        user.point = user.point - formatPrice * SERVICE_CHARGE;
-        // console.log("user.lst_transaction", user)
-        // user.lst_transaction = [...user.lst_transaction, {
-        //     time: (Date.now() / 1000) >> 0,
-        //     type: TYPE_TRANSACTION.ACCEPT_BOOKING,
-        //     content: `Trừ coin để nhận chuyến`,
-        //     value: value_service_charge
-        // }]
-        const promise_save_user = user.save(opts);
+
         //
-        let promise_booking = Booking.findOne({ _id: booking_id }).populate("cus_id", 'device_token name phone avatar');
-        let promise_journey = Journeys.findOne({ _id: journey_id });
-        const all_data = await Promise.all([promise_booking, promise_journey]);
-        const data_booking = all_data[0];
-        const data_journeys = all_data[1];
-        console.log("data_journeys", data_journeys)
-        if (data_booking.status != CONSTANT_STATUS_BOOKING.FINDING_DRIVER) {
-            session.endSession();
-            res.status(200).send({ err: true, data: null, message: 'Chuyến đi này đã có tài xế khác nhận rồi. Hãy nhanh tay nhận chuyến ở lần sau nhé ^^' })
-            return
-        }
-        if (data_journeys.status === CONSTANT_STATUS_JOUNEYS.END || data_journeys.status === CONSTANT_STATUS_JOUNEYS.CANCEL) {
-            session.endSession();
-            res.status(200).send({ err: true, data: null, message: 'Bạn không thể nhận chuyến đi này vì hành trình của bạn đã kết thúc' })
-            return
-        }
-        // set data for booking
-        data_booking.status = CONSTANT_STATUS_BOOKING.WAITING_DRIVER;
-        data_booking.journey_id = journey_id;
-        data_booking.driver_id = req.user._id;
-        data_booking.price = price;
-        data_booking.suggestion_pick = suggestion_pick;
-        const promise_save_booking = data_booking.save(opts);
-        //set data for journey
-        data_journeys.lst_booking_id = [...data_journeys.lst_booking_id, booking_id];
-        const info_cus = { name: data_booking.cus_id.name, phone: data_booking.cus_id.phone, avatar: data_booking.cus_id.avatar, price: price, from: data_booking.from, seat: data_booking.seat }
-        data_journeys.lst_pickup_point = [...data_journeys.lst_pickup_point, { ...suggestion_pick, info: info_cus, isPick: false, booking_id: booking_id, booking_type: data_booking.booking_type, orderInfo: data_booking.orderInfo }]
-        const promise_save_journey = data_journeys.save(opts);
-        const save_action = await Promise.all([promise_save_user, promise_save_booking, promise_save_journey])
-        pushNotificationTo_User(
-            [data_booking.cus_id.device_token],
-            'Đã có tài xế nhận đón bạn', 'Hãy bấm vào đây để xem chi tiết chuyến xe',
-            {
-                type: CONSTANT_NOTIFICATION.DRIVER_ACEEPT_BOOKING,
-                journey_id: journey_id,
-                booking_id: booking_id
+        await session.withTransaction(async () => {
+            let promise_booking = Booking.findOne({ _id: booking_id }).populate("cus_id", 'device_token name phone avatar');
+            let promise_journey = Journeys.findOne({ _id: journey_id });
+            const all_data = await Promise.all([promise_booking, promise_journey]);
+            const data_booking = all_data[0];
+            const data_journeys = all_data[1];
+            if (data_booking.status != CONSTANT_STATUS_BOOKING.FINDING_DRIVER) {
+                session.endSession();
+                res.status(200).send({ err: true, data: null, message: 'Chuyến đi này đã có tài xế khác nhận rồi. Hãy nhanh tay nhận chuyến ở lần sau nhé ^^' })
+                return
+            }
+            if (data_journeys.status === CONSTANT_STATUS_JOUNEYS.END || data_journeys.status === CONSTANT_STATUS_JOUNEYS.CANCEL) {
+                session.endSession();
+                res.status(200).send({ err: true, data: null, message: 'Bạn không thể nhận chuyến đi này vì hành trình của bạn đã kết thúc' })
+                return
+            }
+
+            // set data for booking
+            data_booking.status = CONSTANT_STATUS_BOOKING.WAITING_DRIVER;
+            data_booking.journey_id = journey_id;
+            data_booking.driver_id = req.user._id;
+            data_booking.price = price;
+            data_booking.suggestion_pick = suggestion_pick;
+            const promise_save_booking = data_booking.save(opts);
+            //set data for journey
+            data_journeys.lst_booking_id = [...data_journeys.lst_booking_id, booking_id];
+            const info_cus = { name: data_booking.cus_id.name, phone: data_booking.cus_id.phone, avatar: data_booking.cus_id.avatar, price: price, from: data_booking.from, seat: data_booking.seat }
+            data_journeys.lst_pickup_point = [...data_journeys.lst_pickup_point, { ...suggestion_pick, info: info_cus, isPick: false, booking_id: booking_id, booking_type: data_booking.booking_type, orderInfo: data_booking.orderInfo }]
+            const promise_save_journey = data_journeys.save(opts);
+
+            // trừ point
+            user.point = user.point - formatPrice * SERVICE_CHARGE;
+            const transaction = new Transaction({
+                driver_id: user._id,
+                time: (Date.now() / 1000) >> 0,
+                type: TYPE_TRANSACTION.ACCEPT_BOOKING,
+                content: `Trừ coin để nhận chuyến`,
+                amount: value_service_charge
             })
-        await session.commitTransaction();
+            const promise_save_trans = transaction.save(opts);
+
+
+            const promise_save_user = user.save(opts);
+            const save_action = await Promise.all([promise_save_user, promise_save_booking, promise_save_journey, promise_save_trans])
+            pushNotificationTo_User(
+                [data_booking.cus_id.device_token],
+                'Đã có tài xế nhận đón bạn', 'Hãy bấm vào đây để xem chi tiết chuyến xe',
+                {
+                    type: CONSTANT_NOTIFICATION.DRIVER_ACEEPT_BOOKING,
+                    journey_id: journey_id,
+                    booking_id: booking_id
+                })
+            res.status(200).send({ err: false, data: { data_booking: 'success', data_journeys: data_journeys } })
+
+        })
+
+
+
         session.endSession();
-        res.status(200).send({ err: false, data: { data_booking: 'success', data_journeys: data_journeys } })
     } catch (error) {
         console.log("error123", error)
-        await session.abortTransaction();
         session.endSession();
         res.status(400).send({ err: true, error })
 
