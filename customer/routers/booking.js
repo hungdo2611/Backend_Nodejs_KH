@@ -81,7 +81,7 @@ routerBooking.get('/booking/driver/getdatabooking', authDriver.auth, async (req,
 
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -100,7 +100,7 @@ routerBooking.post('/booking/finish/:booking_id', auth, async (req, res) => {
 
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -114,7 +114,7 @@ routerBooking.get('/booking/current', auth, async (req, res) => {
         res.status(200).send({ err: false, data: currentBooking })
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -147,7 +147,8 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
             range_price: req.body.range_price,
             line_string: req.body.line_string,
             booking_type: req.body.booking_type,
-            orderInfo: req.body.orderInfo
+            orderInfo: req.body.orderInfo,
+            coupon_code: req.body.coupon_code
         };
         const booking = new Booking(body_booking);
         await booking.save();
@@ -165,7 +166,7 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
         res.status(200).send({ err: false, data: booking })
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -219,12 +220,13 @@ routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
             time_end: { $gte: (Date.now() / 1000) >> 0 },
             journey_type: req.body.journey_type,
             allow_Customer: true,
+            status: { $ne: CONSTANT_STATUS_JOUNEYS.END }
         }).populate('driver_id', "phone avatar name device_token");
         console.log('dataJourney', dataJourney)
         res.status(201).send({ err: false, data: dataJourney });
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -268,13 +270,13 @@ routerBooking.post('/booking/finding/driver_delivery', auth, async (req, res) =>
             time_end: { $gte: (Date.now() / 1000) >> 0 },
             journey_type: req.body.journey_type,
             allow_Shipping: true,
-
+            status: { $ne: CONSTANT_STATUS_JOUNEYS.END }
         }).populate('driver_id', "phone avatar name device_token");
         console.log('dataJourney', dataJourney)
         res.status(201).send({ err: false, data: dataJourney });
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -309,7 +311,7 @@ routerBooking.post('/booking/near/user', auth, async (req, res) => {
         res.status(200).send({ err: false, data: dataJourney.docs, total: dataJourney.totalDocs })
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -342,7 +344,7 @@ routerBooking.get('/booking/history', auth, async (req, res) => {
         res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })

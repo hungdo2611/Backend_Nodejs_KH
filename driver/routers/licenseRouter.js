@@ -30,6 +30,7 @@ license_router.post('/license/approve', async (req, res) => {
     try {
         const { license_id } = req.body;
         const upddate = await License.findOneAndUpdate({ _id: license_id }, { status: status.VERIFIED })
+
         const driver = await Driver.findOne({ _id: upddate.driver_id })
         pushNotificationTo_User(
             [driver.device_token],

@@ -58,7 +58,7 @@ customer_router.get('/users/exist/:phone', async (req, res) => {
 
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -72,7 +72,7 @@ customer_router.post('/users/register/devicetoken', auth, async (req, res) => {
         res.status(200).send({ data: true, err: false })
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -112,7 +112,7 @@ customer_router.post('/users/register', async (req, res) => {
         res.status(200).send({ data: { ...responeDt, token }, token, err: false })
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -139,7 +139,7 @@ customer_router.post('/users/profile', auth, async (req, res) => {
         res.status(200).send({ data: { ...responeDt, token: req.token }, err: false })
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -160,7 +160,7 @@ customer_router.post('/users/info', auth, async (req, res) => {
         res.status(200).send({ data: { ...responeDt, token: req.token }, err: false })
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -191,12 +191,12 @@ customer_router.post('/users/reset/password', async (req, res) => {
 
 
         const token = await user.generateAuthToken()
-        const responeDt = formatUser(data);
+        const responeDt = formatUser(user);
 
         res.status(200).send({ data: { ...responeDt, token }, token, err: false })
     } catch (error) {
         console.log("error", error)
-                res.status(400).send({ err: true, error })
+        res.status(400).send({ err: true, error })
 
     }
 })
@@ -218,8 +218,8 @@ customer_router.post('/users/login', async (req, res) => {
         const responeDt = formatUser(user);
         res.status(200).send({ data: { ...responeDt, token }, token, err: false })
     } catch (error) {
-                res.status(400).send({ err: true, error })
-;
+        res.status(400).send({ err: true, error })
+            ;
         console.log('err login', error)
     }
 })

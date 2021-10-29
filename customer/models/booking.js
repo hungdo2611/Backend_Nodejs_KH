@@ -111,6 +111,10 @@ const booking_Schema = mongoose.Schema({
             type: String,
             required: false
         }
+    },
+    coupon_code: {
+        type: String,
+        required: false
     }
 
 

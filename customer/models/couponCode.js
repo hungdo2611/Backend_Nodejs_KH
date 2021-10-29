@@ -22,6 +22,7 @@ const coupon_code_Schema = mongoose.Schema({
     },
 
     // by cash
+    // < 100 theo phần trăm
     amount: {
         type: Number,
         require: true

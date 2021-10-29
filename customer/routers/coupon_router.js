@@ -14,12 +14,11 @@ coupon_code_router.get('/coupon', auth, async (req, res) => {
         const current_time = (Date.now() / 1000) >> 0;
         console.log("current_time", current_time)
         console.log("req.query", req.query)
-        const coupon = await Coupon_Code.paginate(
-            { expired_time: { $gt: current_time }, code: { $nin: lst_coupon_used } },
-            { page: page_nunmber, limit: page_size, sort: { $natural: -1 } }
-        );
+        const coupon = await Coupon_Code.find(
+            { expired_time: { $gt: current_time }, code: { $nin: lst_coupon_used } }
+        ).sort({ $natural: -1 });
 
-        res.status(200).send({ err: false, data: coupon.docs, total: coupon.totalDocs })
+        res.status(200).send({ err: false, data: coupon })
     } catch (error) {
         console.log("error", error)
         res.status(400).send({ err: true, error })
