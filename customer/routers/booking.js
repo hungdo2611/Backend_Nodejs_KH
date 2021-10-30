@@ -118,7 +118,19 @@ routerBooking.get('/booking/current', auth, async (req, res) => {
 
     }
 })
+routerBooking.get('/booking/state', auth, async (req, res) => {
+    try {
+        const { _id } = req.query
+        const currentBooking = await Booking
+            .findOne({ _id: _id })
+            .populate('driver_id', "phone avatar name").populate('journey_id', 'line_string from to');
+        res.status(200).send({ err: false, data: currentBooking })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send({ err: true, error })
 
+    }
+})
 routerBooking.post('/booking/create', auth, async (req, res) => {
     // Create a new user
     try {
@@ -152,6 +164,15 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
         };
         const booking = new Booking(body_booking);
         await booking.save();
+        if (req.body.coupon_code) {
+            if (req.user.coupon_used) {
+                req.user.coupon_used = [...req.user.coupon_used, req.body.coupon_code]
+            } else {
+                req.user.coupon_used = [req.body.coupon_code]
+            }
+            await req.user.save()
+
+        }
 
         const { lst_devicetoken, list_driverId } = req.body;
         pushNotificationTo_User(

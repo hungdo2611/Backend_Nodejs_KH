@@ -4,6 +4,7 @@ const { auth, authTransaction } = require('../middleware/auth')
 const { CONSTANT_STATUS_JOUNEYS } = require('../../constant/index')
 const Booking = require('../../customer/models/booking')
 const Transaction = require('../models/transaction')
+const Coupon = require('../../customer/models/couponCode')
 const { pushNotificationTo_User } = require('../../utils')
 const { CONSTANT_STATUS_BOOKING, SERVICE_CHARGE, TYPE_TRANSACTION, CONSTANT_NOTIFICATION } = require('../../constant')
 const Journey_router = express.Router()
@@ -252,7 +253,35 @@ Journey_router.post('/journey/accept/booking', authTransaction, async (req, res)
                 res.status(200).send({ err: true, data: null, message: 'Bạn không thể nhận chuyến đi này vì hành trình của bạn đã kết thúc' })
                 return
             }
+            let reduce_value = 0;
+            if (data_booking.coupon_code) {
+                const time_now = (Date.now() / 1000) >> 0
+                const coupon_detail = await Coupon.findOne({ code: data_booking.coupon_code })
+                if (coupon_detail && coupon_detail?.expired_time > time_now) {
+                    const { amount, max_apply, condition } = coupon_detail;
 
+                    if (amount < 100) {
+                        reduce_value = price * amount / 100;
+                        if (reduce_value > max_apply) {
+                            reduce_value = max_apply
+                        }
+                    } else {
+                        reduce_value = amount;
+                    }
+                    if (price < condition?.min_Price) {
+                        reduce_value = 0;
+                    }
+                }
+            }
+            console.log("reduce_value", reduce_value)
+            const transaction_coupon = new Transaction({
+                driver_id: user._id,
+                time: (Date.now() / 1000) >> 0,
+                type: TYPE_TRANSACTION.RETURN_APPLY_COUPON,
+                content: `Hoàn tiền khách hàng áp dụng mã giảm giá`,
+                amount: reduce_value
+            })
+            const promise_save_trans_coupon = transaction_coupon.save(opts);
             // set data for booking
             data_booking.status = CONSTANT_STATUS_BOOKING.WAITING_DRIVER;
             data_booking.journey_id = journey_id;
@@ -262,12 +291,12 @@ Journey_router.post('/journey/accept/booking', authTransaction, async (req, res)
             const promise_save_booking = data_booking.save(opts);
             //set data for journey
             data_journeys.lst_booking_id = [...data_journeys.lst_booking_id, booking_id];
-            const info_cus = { name: data_booking.cus_id.name, phone: data_booking.cus_id.phone, avatar: data_booking.cus_id.avatar, price: price, from: data_booking.from, seat: data_booking.seat }
+            const info_cus = { name: data_booking.cus_id.name, phone: data_booking.cus_id.phone, avatar: data_booking.cus_id.avatar, price: price - reduce_value, from: data_booking.from, seat: data_booking.seat }
             data_journeys.lst_pickup_point = [...data_journeys.lst_pickup_point, { ...suggestion_pick, info: info_cus, isPick: false, booking_id: booking_id, booking_type: data_booking.booking_type, orderInfo: data_booking.orderInfo }]
             const promise_save_journey = data_journeys.save(opts);
 
             // trừ point
-            user.point = user.point - formatPrice * SERVICE_CHARGE;
+            user.point = user.point - formatPrice * SERVICE_CHARGE + reduce_value;
             const transaction = new Transaction({
                 driver_id: user._id,
                 time: (Date.now() / 1000) >> 0,
@@ -279,7 +308,7 @@ Journey_router.post('/journey/accept/booking', authTransaction, async (req, res)
 
 
             const promise_save_user = user.save(opts);
-            const save_action = await Promise.all([promise_save_user, promise_save_booking, promise_save_journey, promise_save_trans])
+            const save_action = await Promise.all([promise_save_user, promise_save_booking, promise_save_journey, promise_save_trans, promise_save_trans_coupon])
             pushNotificationTo_User(
                 [data_booking.cus_id.device_token],
                 'Đã có tài xế nhận đón bạn', 'Hãy bấm vào đây để xem chi tiết chuyến xe',
