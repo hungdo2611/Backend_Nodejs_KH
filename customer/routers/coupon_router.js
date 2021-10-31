@@ -12,7 +12,6 @@ coupon_code_router.get('/coupon/detail', auth_driver.auth, async (req, res) => {
         const { code } = req.query;
 
         const coupon = await Coupon_Code.findOne({ code: code })
-        console.log("coupon", coupon)
         if (coupon) {
             res.status(200).send({ err: false, data: coupon })
         } else {
@@ -32,7 +31,6 @@ coupon_code_router.get('/coupon/customer/detail', auth, async (req, res) => {
         const { code } = req.query;
 
         const coupon = await Coupon_Code.findOne({ code: code })
-        console.log("coupon", coupon)
         if (coupon) {
             res.status(200).send({ err: false, data: coupon })
         } else {
