@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { isValidPhoneNumber } = require('libphonenumber-js')
 var AutoIncrement = require('mongoose-sequence')(mongoose);
+const mongoosePaginate = require('mongoose-paginate-v2');
+
 const Schema = mongoose.Schema;
 
 
@@ -67,7 +69,7 @@ const driver_Schema = mongoose.Schema({
         require: false
     }
 })
-driver_Schema.plugin(AutoIncrement, { id: 'driver_seq', inc_field: 'driver_id' })
+driver_Schema.plugin(mongoosePaginate);
 
 driver_Schema.pre('save', async function (next) {
     // Hash the password before saving the user model

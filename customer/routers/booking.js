@@ -340,28 +340,23 @@ routerBooking.post('/booking/near/user', auth, async (req, res) => {
 routerBooking.get('/booking/history', auth, async (req, res) => {
     try {
         const { page_nunmber, page_size, type } = req.query;
-        console.log("req.query", page_nunmber)
         if (!page_nunmber || !page_size) {
-            console.log("abcd")
             res.status(400).send({ err: true, data: 'missing param' })
             return
         }
         if (type) {
             if (type === 'delivery') {
                 const history = await Booking.paginate({ cus_id: req.user._id, $or: [{ status: CONSTANT_TYPE_BOOKING.COACH_DELIVERY_CAR }, { status: CONSTANT_TYPE_BOOKING.HYBIRD_DELIVERY_CAR }] }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_nunmber, limit: page_size, forceCountFn: true, sort: { $natural: -1 } });
-                console.log("history2", history)
 
                 res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
                 return
             }
             const history = await Booking.paginate({ cus_id: req.user._id, status: type }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_nunmber, limit: page_size, forceCountFn: true, sort: { $natural: -1 } });
-            console.log("history1", history)
 
             res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
             return
         }
         const history = await Booking.paginate({ cus_id: req.user._id, }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_nunmber, limit: page_size, forceCountFn: true, sort: { $natural: -1 } });
-        console.log("history", history)
         res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
     } catch (error) {
         console.log("error", error)

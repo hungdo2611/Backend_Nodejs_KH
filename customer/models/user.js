@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { isValidPhoneNumber } = require('libphonenumber-js')
 var AutoIncrement = require('mongoose-sequence')(mongoose);
+const mongoosePaginate = require('mongoose-paginate-v2');
+
 const Schema = mongoose.Schema;
 
 const customer_Schema = mongoose.Schema({
@@ -77,7 +79,7 @@ const customer_Schema = mongoose.Schema({
         require: false
     }
 })
-customer_Schema.plugin(AutoIncrement, { id: 'customer_seq', inc_field: 'cus_id' })
+customer_Schema.plugin(mongoosePaginate);
 
 // customer_Schema.pre('save', async function (next) {
 //     // Hash the password before saving the user model
@@ -115,6 +117,6 @@ customer_Schema.statics.findByCredentials = async (phone, password) => {
     return user
 }
 
-const Customer = mongoose.model('Customer', customer_Schema)
+const Customer = mongoose.models.Customer || mongoose.model('Customer', customer_Schema);
 
 module.exports = Customer

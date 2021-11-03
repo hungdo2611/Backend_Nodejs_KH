@@ -8,6 +8,7 @@ var serviceAccount = require("./be-booking-6dd8b-firebase-adminsdk-mhr7h-2e93874
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
+const cors = require('cors');
 
 const customer_router = require('./customer/routers/user')
 const routerBooking = require("./customer/routers/booking")
@@ -18,6 +19,12 @@ const Journey_router = require('./driver/routers/journeys')
 const notification_router = require("./driver/routers/notification_router")
 const license_router = require('./driver/routers/licenseRouter')
 const transaction_router = require('./driver/routers/transactionRouter')
+
+//admin
+const adminRouter = require('./admin/routers/adminRouter')
+const adminDriver = require('./admin/routers/adminDriver')
+const adminCustomer_router = require('./admin/routers/adminCustomer')
+
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require("swagger-jsdoc")
 const port = process.env.PORT
@@ -45,15 +52,32 @@ const options = {
 const specs = swaggerJsDoc(options)
 
 const app = express()
+app.use(cors({
+    origin: ['http://localhost:3006'],
+    credentials: true,
+
+}));
 app.use(express.json())
+//admin
+app.use(adminRouter)
+app.use(adminDriver)
+app.use(adminCustomer_router)
+
+//customer
 app.use(customer_router)
-app.use(driver_router)
-app.use(Journey_router)
 app.use(routerBooking)
+app.use(coupon_code_router)
+
+//driver
+app.use(Journey_router)
+app.use(driver_router)
 app.use(notification_router)
 app.use(license_router)
 app.use(transaction_router)
-app.use(coupon_code_router)
+
+
+
+
 
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs))

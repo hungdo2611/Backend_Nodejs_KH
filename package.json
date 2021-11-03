@@ -8,6 +8,7 @@
     "@here/maps-api-for-javascript": "^1.29.0",
     "bcryptjs": "^2.4.3",
     "bee-queue": "^1.4.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "firebase-admin": "^9.11.0",
     "geolib": "^3.3.1",
