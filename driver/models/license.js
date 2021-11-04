@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const Schema = mongoose.Schema;
 const vehicleTypeData = {
@@ -51,6 +52,9 @@ const license_schema = mongoose.Schema({
     status: {
         type: String
     },
+    reject: {
+        type: String
+    },
     lst_image_passport: [
         {
             type: String,
@@ -64,6 +68,7 @@ const license_schema = mongoose.Schema({
 
 })
 
+license_schema.plugin(mongoosePaginate);
 
 
 const License = mongoose.model('license_schema', license_schema)

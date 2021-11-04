@@ -7,10 +7,13 @@ const auth = async (req, res, next) => {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY_DRIVER)
 
-        const user = await Driver.findOne({ _id: data._id }, { tokens: 0, password: 0, }).populate("verified_status", "status")
+        const user = await Driver.findOne({ _id: data._id }, { tokens: 0, password: 0, }).populate("verified_status", "status reject")
         console.log("user", user)
         if (!user) {
             throw new Error()
+        }
+        if (!user.is_active) {
+            res.status(444).send({ error: 'Tài khoản đã bị khoá. Vui lòng liên hệ với admin để được nhận hỗ trợ' })
         }
         req.user = user
         req.token = token
@@ -29,6 +32,9 @@ const authTransaction = async (req, res, next) => {
         const user = await Driver.findOne({ _id: data._id }, { tokens: 0, password: 0, }).populate("verified_status", "status")
         if (!user) {
             throw new Error()
+        }
+        if (!user.is_active) {
+            res.status(444).send({ error: 'Tài khoản đã bị khoá. Vui lòng liên hệ với admin để được nhận hỗ trợ' })
         }
         req.user = user
         req.token = token
