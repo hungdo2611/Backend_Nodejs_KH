@@ -10,7 +10,8 @@ const bcrypt = require('bcryptjs')
 
 var admin = require("firebase-admin");
 
-const CONSTANT_DATA = require('../../constant')
+const CONSTANT_DATA = require('../../constant');
+const Rating = require('../models/rating');
 const formatUser = (user) => {
     return {
         "is_active": user.is_active,
@@ -274,6 +275,17 @@ driver_router.post('/driver/reset/password', async (req, res) => {
         console.log("error", error)
         res.status(400).send({ err: true, error })
 
+    }
+})
+driver_router.get('/driver/recent/rating', async (req, res) => {
+    try {
+        const { page_nunmber, page_size, id } = req.query;
+        console.log('id', id)
+        const lstRating = await Rating.paginate({ driver_id: id }, { page: page_nunmber, limit: page_size, sort: { $natural: -1 } })
+
+        res.status(200).send({ err: false, data: lstRating.docs, total: lstRating.totalDocs })
+    } catch (error) {
+        res.status(500).send(error)
     }
 })
 

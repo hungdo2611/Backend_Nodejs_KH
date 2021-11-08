@@ -13,4 +13,20 @@ async function pushNotificationTo_User(lst, title, body, data) {
     console.log("send status", send)
 
 }
-module.exports = { pushNotificationTo_User }
+
+async function pushNotificationToTopic(topic, title, body, data) {
+    const payload = {
+        notification: {
+            title: title,
+            body: body,
+            sound: 'defaulf'
+        },
+        data: data,
+
+    };
+
+    const send = await admin.messaging().sendToTopic(topic, payload);
+    console.log("send status", send)
+
+}
+module.exports = { pushNotificationTo_User, pushNotificationToTopic }

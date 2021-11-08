@@ -14,6 +14,9 @@ const { request } = require('express')
 const Driver = require('../../driver/models/driver')
 const { pushNotificationTo_User } = require('../../utils/index')
 const { CONSTANT_NOTIFICATION, CONSTANT_STATUS_BOOKING, CONSTANT_STATUS_JOUNEYS, CONSTANT_TYPE_BOOKING } = require('../../constant/index')
+
+const Rating = require('../../driver/models/rating')
+
 // Booking.deleteMany({}, (res) => {
 //     console.log('res delete', res)
 // })
@@ -242,7 +245,7 @@ routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
             journey_type: req.body.journey_type,
             allow_Customer: true,
             status: { $ne: CONSTANT_STATUS_JOUNEYS.END }
-        }).populate('driver_id', "phone avatar name device_token");
+        }).populate('driver_id', "phone avatar name device_token ratingPoint license_plate verified_status");
         console.log('dataJourney', dataJourney)
         res.status(201).send({ err: false, data: dataJourney });
     } catch (error) {
@@ -364,5 +367,51 @@ routerBooking.get('/booking/history', auth, async (req, res) => {
 
     }
 })
+routerBooking.post('/booking/rating', auth, async (req, res) => {
+    try {
+        const { driver_id, booking_id, rate_value, comment } = req.body;
+        if (!driver_id || !booking_id || !rate_value || !comment) {
+            res.status(400).send({ err: true, data: 'missing param' })
+            return
+        }
+        const rating = new Rating({ driver_id, booking_id, rate_value, comment });
+        const saved_rating = await rating.save();
+        //
+        const Booking_new = await Booking.findOneAndUpdate({ _id: booking_id }, { rating_id: saved_rating._id });
 
+        // update rating point for driver
+        let driver = await Driver.findOne({ _id: driver_id });
+        let crr_rating_point = driver?.ratingPoint?.value ? driver?.ratingPoint?.value : 4.5;
+        let crr_count = driver?.ratingPoint?.count ? driver?.ratingPoint?.count : 1;
+
+
+        const update_rating_point = (crr_rating_point * crr_count + rate_value) / (crr_count + 1)
+
+        driver.ratingPoint.value = update_rating_point;
+        driver.ratingPoint.count = crr_count + 1;
+        await driver.save();
+        res.status(200).send({ err: false, data: saved_rating._id })
+
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send({ err: true, error })
+
+    }
+})
+routerBooking.get('/booking/rating', auth, async (req, res) => {
+    try {
+        const { rating_id } = req.query;
+        if (!rating_id) {
+            res.status(400).send({ err: true, data: 'missing param' })
+            return
+        }
+        const rate_data = await Rating.findOne({ _id: rating_id });
+        res.status(200).send({ err: false, data: rate_data })
+
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send({ err: true, error })
+
+    }
+})
 module.exports = routerBooking;

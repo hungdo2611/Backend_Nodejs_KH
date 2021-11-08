@@ -24,7 +24,7 @@ coupon_code_router.get('/coupon/detail', auth_driver.auth, async (req, res) => {
     }
 })
 
-// driver lấy chi tiết coupon
+// customer lấy chi tiết coupon
 coupon_code_router.get('/coupon/customer/detail', auth, async (req, res) => {
     try {
 
@@ -63,24 +63,5 @@ coupon_code_router.get('/coupon', auth, async (req, res) => {
     }
 })
 
-// Thêm coupon
-// admin auth
-coupon_code_router.post('/coupon', async (req, res) => {
-    try {
-
-        const { expired_time, code, content, amount, max_apply, condition } = req.body;
-        const checkExist = await Coupon_Code.findOne({ code: code })
-        if (checkExist) {
-            return res.status(200).send({ err: true, data: 'Code is existed' })
-        }
-        const new_Coupon = new Coupon_Code({ expired_time, code, content, amount, max_apply, condition })
-        await new_Coupon.save();
-        res.status(200).send({ err: false, data: new_Coupon })
-    } catch (error) {
-        console.log("error", error)
-        res.status(400).send({ err: true, error })
-
-    }
-})
 
 module.exports = coupon_code_router;

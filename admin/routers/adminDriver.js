@@ -6,10 +6,9 @@ const parsePhoneNumber = require('libphonenumber-js')
 const Driver = require('../../driver/models/driver')
 const Journey = require('../../driver/models/journeys')
 const { CONSTANT_NOTIFICATION } = require('../../constant')
-const { pushNotificationTo_User } = require('../../utils/index')
+const { pushNotificationTo_User, pushNotificationToTopic } = require('../../utils/index')
 
 const adminDriver = express.Router()
-
 adminDriver.get('/admin/driver', auth, async (req, res) => {
     try {
         const { page_number, page_size } = req.query;

@@ -53,7 +53,22 @@ const driver_Schema = mongoose.Schema({
         default: 0
 
     },
-
+    ratingPoint: {
+        value: {
+            type: Number,
+            required: false,
+            default: 4.5
+        },
+        count: {
+            type: Number,
+            required: false,
+            default: 1
+        }
+    },
+    license_plate: {
+        type: String,
+        required: false
+    },
     verified_status: {
         type: Schema.Types.ObjectId,
         ref: 'license_schema'

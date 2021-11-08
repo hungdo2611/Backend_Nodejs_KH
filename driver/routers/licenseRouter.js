@@ -11,6 +11,8 @@ const status = {
 license_router.post('/license/update', auth, async (req, res) => {
     try {
         const { driver_id, display_name, vehicle_type, license_plate, business, lst_image_passport, lst_image_license } = req.body;
+
+        console.log("license_plate", license_plate)
         const license = new License({ driver_id, display_name, vehicle_type, license_plate, business, lst_image_passport, lst_image_license, status: status.VERIFYING })
         await license.save();
         req.user.verified_status = license._id;

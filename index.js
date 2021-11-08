@@ -25,6 +25,9 @@ const adminRouter = require('./admin/routers/adminRouter')
 const adminDriver = require('./admin/routers/adminDriver')
 const adminCustomer_router = require('./admin/routers/adminCustomer')
 const adminLicense = require('./admin/routers/adminLicense')
+const adminCoupon = require('./admin/routers/adminCoupon')
+const adminNotification = require('./admin/routers/adminNotification')
+
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require("swagger-jsdoc")
 const port = process.env.PORT
@@ -63,6 +66,8 @@ app.use(adminRouter)
 app.use(adminDriver)
 app.use(adminCustomer_router)
 app.use(adminLicense)
+app.use(adminCoupon)
+app.use(adminNotification)
 
 
 //customer

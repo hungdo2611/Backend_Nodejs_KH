@@ -7,6 +7,7 @@ const { isValidPhoneNumber } = require('libphonenumber-js')
 var admin = require("firebase-admin");
 const bcrypt = require('bcryptjs')
 const mongoose = require('mongoose')
+const License = require('../../driver/models/license')
 
 
 
@@ -248,6 +249,20 @@ customer_router.post('/users/me/logoutall', auth, async (req, res) => {
         res.status(500).send(error)
     }
 })
+
+customer_router.get('/customer/license/driver', auth, async (req, res) => {
+    try {
+        const { id } = req.query;
+        console.log('id', id)
+        const license = await License.findOne({ _id: id });
+
+        res.send({ err: false, data: license })
+    } catch (error) {
+        res.status(500).send(error)
+    }
+})
+
+
 
 
 module.exports = customer_router;

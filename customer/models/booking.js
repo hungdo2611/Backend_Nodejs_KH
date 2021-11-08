@@ -115,6 +115,10 @@ const booking_Schema = mongoose.Schema({
     coupon_code: {
         type: String,
         required: false
+    },
+    rating_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'rating_schema'
     }
 
 
