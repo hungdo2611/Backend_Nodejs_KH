@@ -20,6 +20,22 @@ const rating_schema = mongoose.Schema({
     comment: {
         type: String,
         require: true
+    },
+    name: {
+        type: String,
+        require: true
+    },
+    avatar: {
+        type: String,
+        require: true
+    },
+    user_id: {
+        type: String,
+        require: true
+    },
+    time: {
+        type: Number,
+        require: true
     }
 
 })

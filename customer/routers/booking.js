@@ -113,7 +113,7 @@ routerBooking.get('/booking/current', auth, async (req, res) => {
             .findOne({ cus_id: req.user._id })
             .or([{ 'status': CONSTANT_STATUS_BOOKING.FINDING_DRIVER }, { 'status': CONSTANT_STATUS_BOOKING.PROCESSING }, { 'status': CONSTANT_STATUS_BOOKING.WAITING_DRIVER }])
             .sort({ $natural: -1 })
-            .populate('driver_id', "phone avatar name").populate('journey_id', 'line_string from to');
+            .populate('driver_id', "phone avatar name license_plate").populate('journey_id', 'line_string from to');
         res.status(200).send({ err: false, data: currentBooking })
     } catch (error) {
         console.log("error", error)
@@ -126,7 +126,7 @@ routerBooking.get('/booking/state', auth, async (req, res) => {
         const { _id } = req.query
         const currentBooking = await Booking
             .findOne({ _id: _id })
-            .populate('driver_id', "phone avatar name").populate('journey_id', 'line_string from to');
+            .populate('driver_id', "phone avatar name license_plate").populate('journey_id', 'line_string from to');
         res.status(200).send({ err: false, data: currentBooking })
     } catch (error) {
         console.log("error", error)
@@ -295,7 +295,7 @@ routerBooking.post('/booking/finding/driver_delivery', auth, async (req, res) =>
             journey_type: req.body.journey_type,
             allow_Shipping: true,
             status: { $ne: CONSTANT_STATUS_JOUNEYS.END }
-        }).populate('driver_id', "phone avatar name device_token");
+        }).populate('driver_id', "phone avatar name device_token ratingPoint license_plate verified_status");
         console.log('dataJourney', dataJourney)
         res.status(201).send({ err: false, data: dataJourney });
     } catch (error) {
@@ -370,11 +370,12 @@ routerBooking.get('/booking/history', auth, async (req, res) => {
 routerBooking.post('/booking/rating', auth, async (req, res) => {
     try {
         const { driver_id, booking_id, rate_value, comment } = req.body;
-        if (!driver_id || !booking_id || !rate_value || !comment) {
-            res.status(400).send({ err: true, data: 'missing param' })
+        if (!driver_id || !booking_id || !rate_value) {
+            res.status(200).send({ err: true, data: 'missing param' })
             return
         }
-        const rating = new Rating({ driver_id, booking_id, rate_value, comment });
+        const current_Time = (Date.now() / 1000) >> 0;
+        const rating = new Rating({ driver_id, booking_id, rate_value, comment, name: req.user.name, user_id: req.user._id, avatar: req.user.avatar, time: current_Time });
         const saved_rating = await rating.save();
         //
         const Booking_new = await Booking.findOneAndUpdate({ _id: booking_id }, { rating_id: saved_rating._id });
