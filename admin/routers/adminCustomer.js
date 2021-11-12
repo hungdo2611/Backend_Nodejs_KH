@@ -1,6 +1,6 @@
 const express = require('express')
 const Admin = require('../models/user')
-const auth = require('../middleware/auth')
+const { auth, authWithoutData } = require('../middleware/auth')
 const parsePhoneNumber = require('libphonenumber-js')
 
 const Customer = require('../../customer/models/user')
@@ -8,7 +8,7 @@ const Booking = require('../../customer/models/booking')
 
 const adminCustomer = express.Router()
 
-adminCustomer.get('/admin/customer', auth, async (req, res) => {
+adminCustomer.get('/admin/customer', authWithoutData, async (req, res) => {
     try {
         const { page_number, page_size } = req.query;
         if (!page_number || !page_size) {
@@ -21,7 +21,7 @@ adminCustomer.get('/admin/customer', auth, async (req, res) => {
                 limit: page_size,
                 forceCountFn: true,
                 sort: { $natural: -1 },
-                projection: { tokens: 0, password: 0, }
+                projection: { password: 0, }
             });
         res.status(200).send({ data: lst_customer.docs, err: false, total: lst_customer.totalDocs })
 
@@ -33,7 +33,7 @@ adminCustomer.get('/admin/customer', auth, async (req, res) => {
     }
 
 })
-adminCustomer.get('/admin/customer/info', auth, async (req, res) => {
+adminCustomer.get('/admin/customer/info', authWithoutData, async (req, res) => {
     try {
         const { phone } = req.query;
         if (!phone) {
@@ -41,7 +41,7 @@ adminCustomer.get('/admin/customer/info', auth, async (req, res) => {
         }
         const phoneNumber = parsePhoneNumber(phone, 'VN')
 
-        const customer = await Customer.findOne({ phone: phoneNumber.number }, { tokens: 0, password: 0, });
+        const customer = await Customer.findOne({ phone: phoneNumber.number }, { password: 0, });
 
         res.status(200).send({ data: customer, err: false })
 
@@ -53,7 +53,7 @@ adminCustomer.get('/admin/customer/info', auth, async (req, res) => {
     }
 
 })
-adminCustomer.get('/admin/customer/recentBooking', auth, async (req, res) => {
+adminCustomer.get('/admin/customer/recentBooking', authWithoutData, async (req, res) => {
     try {
         const { id } = req.query;
         if (!id) {

@@ -1,6 +1,6 @@
 const express = require('express')
 const Admin = require('../models/user')
-const auth = require('../middleware/auth')
+const { auth, authWithoutData } = require('../middleware/auth')
 const parsePhoneNumber = require('libphonenumber-js')
 
 const Driver = require('../../driver/models/driver')
@@ -9,7 +9,7 @@ const { CONSTANT_NOTIFICATION } = require('../../constant')
 const { pushNotificationTo_User, pushNotificationToTopic } = require('../../utils/index')
 
 const adminDriver = express.Router()
-adminDriver.get('/admin/driver', auth, async (req, res) => {
+adminDriver.get('/admin/driver', authWithoutData, async (req, res) => {
     try {
         const { page_number, page_size } = req.query;
         if (!page_number || !page_size) {
@@ -23,7 +23,7 @@ adminDriver.get('/admin/driver', auth, async (req, res) => {
                 limit: page_size,
                 forceCountFn: true,
                 sort: { $natural: -1 },
-                projection: { tokens: 0, password: 0, }
+                projection: { password: 0, }
             });
         res.status(200).send({ data: lst_driver.docs, err: false, total: lst_driver.totalDocs })
 
@@ -36,7 +36,7 @@ adminDriver.get('/admin/driver', auth, async (req, res) => {
 
 })
 
-adminDriver.post('/admin/lock/driver', auth, async (req, res) => {
+adminDriver.post('/admin/lock/driver', authWithoutData, async (req, res) => {
     try {
         const { _id } = req.body;
         if (!_id) {
@@ -57,7 +57,7 @@ adminDriver.post('/admin/lock/driver', auth, async (req, res) => {
 
     }
 })
-adminDriver.post('/admin/unlock/driver', auth, async (req, res) => {
+adminDriver.post('/admin/unlock/driver', authWithoutData, async (req, res) => {
     try {
         const { _id } = req.body;
         if (!_id) {
@@ -79,7 +79,7 @@ adminDriver.post('/admin/unlock/driver', auth, async (req, res) => {
     }
 })
 
-adminDriver.get('/admin/driver/info', auth, async (req, res) => {
+adminDriver.get('/admin/driver/info', authWithoutData, async (req, res) => {
     try {
         const { phone } = req.query;
         if (!phone) {
@@ -87,7 +87,7 @@ adminDriver.get('/admin/driver/info', auth, async (req, res) => {
         }
         const phoneNumber = parsePhoneNumber(phone, 'VN')
 
-        const driver = await Driver.findOne({ phone: phoneNumber.number }, { tokens: 0, password: 0, });
+        const driver = await Driver.findOne({ phone: phoneNumber.number }, { password: 0, });
 
         res.status(200).send({ data: driver, err: false })
 
@@ -99,7 +99,7 @@ adminDriver.get('/admin/driver/info', auth, async (req, res) => {
     }
 
 })
-adminDriver.get('/admin/driver/recentJourney', auth, async (req, res) => {
+adminDriver.get('/admin/driver/recentJourney', authWithoutData, async (req, res) => {
     try {
         const { id } = req.query;
         if (!id) {

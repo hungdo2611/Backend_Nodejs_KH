@@ -73,12 +73,6 @@ const driver_Schema = mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'license_schema'
     },
-    tokens: [{
-        token: {
-            type: String,
-            required: true
-        }
-    }],
     device_token: {
         type: String,
         require: false
@@ -99,7 +93,6 @@ driver_Schema.methods.generateAuthToken = async function () {
     // Generate an auth token for the user
     const user = this
     const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY_DRIVER)
-    user.tokens = user.tokens.concat({ token })
     await user.save()
     return token
 }

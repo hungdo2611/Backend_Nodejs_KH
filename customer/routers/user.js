@@ -1,6 +1,6 @@
 const express = require('express')
 const Customer = require('../models/User')
-const auth = require('../middleware/auth')
+const { auth, authWithoutData } = require('../middleware/auth')
 const customer_router = express.Router()
 const parsePhoneNumber = require('libphonenumber-js')
 const { isValidPhoneNumber } = require('libphonenumber-js')
@@ -119,13 +119,8 @@ customer_router.post('/users/register', async (req, res) => {
 })
 //update password
 customer_router.post('/users/profile', auth, async (req, res) => {
-    // Create a new user
     try {
-        // const body = {
-        //     password: '',
-        //     name: ''
-        // }
-        console.log("req data", req.user)
+
         if (req.body.password.length < 6) {
             res.status(404).send({ data: null, err: "Password min length is 6" })
             return
@@ -145,12 +140,9 @@ customer_router.post('/users/profile', auth, async (req, res) => {
     }
 })
 customer_router.post('/users/info', auth, async (req, res) => {
-    // Create a new user
+    // update user info
     try {
-        // const body = {
-        //     password: '',
-        //     name: ''
-        // }
+
 
         req.user.name = req.body.name;
         req.user.avatar = req.body.avatar;
@@ -228,9 +220,6 @@ customer_router.post('/users/login', async (req, res) => {
 customer_router.post('/users/me/logout', auth, async (req, res) => {
     // Log user out of the application
     try {
-        req.user.tokens = req.user.tokens.filter((token) => {
-            return token.token != req.token
-        })
         req.user.device_token = ''
         await req.user.save()
         res.send({ err: false, data: "success" })
@@ -238,19 +227,9 @@ customer_router.post('/users/me/logout', auth, async (req, res) => {
         res.status(500).send(error)
     }
 })
-//logout all
-customer_router.post('/users/me/logoutall', auth, async (req, res) => {
-    // Log user out of all devices
-    try {
-        req.user.tokens.splice(0, req.user.tokens.length)
-        await req.user.save()
-        res.send({ err: false, data: "success" })
-    } catch (error) {
-        res.status(500).send(error)
-    }
-})
 
-customer_router.get('/customer/license/driver', auth, async (req, res) => {
+// get thông tin xe bằng lái của tài xế
+customer_router.get('/customer/license/driver', authWithoutData, async (req, res) => {
     try {
         const { id } = req.query;
         console.log('id', id)

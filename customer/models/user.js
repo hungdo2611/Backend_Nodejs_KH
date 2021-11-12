@@ -68,12 +68,6 @@ const customer_Schema = mongoose.Schema({
         default: 0
 
     },
-    tokens: [{
-        token: {
-            type: String,
-            required: true
-        }
-    }],
     device_token: {
         type: String,
         require: false
@@ -94,7 +88,6 @@ customer_Schema.methods.generateAuthToken = async function () {
     // Generate an auth token for the user
     const user = this
     const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY_CUSTOMER)
-    user.tokens = user.tokens.concat({ token })
     await user.save()
     return token
 }

@@ -6,8 +6,7 @@ const auth = async (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY_CUSTOMER)
-        const user = await Customer.findOne({ _id: data._id }, { tokens: 0, password: 0, })
-        console.log("user", user)
+        const user = await Customer.findOne({ _id: data._id }, { password: 0, })
 
         if (!user) {
             throw new Error()
@@ -21,4 +20,16 @@ const auth = async (req, res, next) => {
     }
 
 }
-module.exports = auth
+const authWithoutData = async (req, res, next) => {
+
+    try {
+        const token = req.header('Authorization').replace('Bearer ', '')
+        const data = jwt.verify(token, process.env.JWT_KEY_CUSTOMER)
+        req._id = data._id;
+        next()
+    } catch (error) {
+        res.status(401).send({ error: 'Not authorized to access this resource' })
+    }
+
+}
+module.exports = { auth, authWithoutData }

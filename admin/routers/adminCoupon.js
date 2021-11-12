@@ -1,11 +1,11 @@
 const express = require('express')
-const auth = require('../middleware/auth')
+const { auth, authWithoutData } = require('../middleware/auth')
 
 const Coupon = require('../../customer/models/couponCode')
 
 const adminCoupon = express.Router()
 
-adminCoupon.get('/admin/coupon', auth, async (req, res) => {
+adminCoupon.get('/admin/coupon', authWithoutData, async (req, res) => {
     try {
         const { page_number, page_size } = req.query;
         if (!page_number || !page_size) {
@@ -31,7 +31,7 @@ adminCoupon.get('/admin/coupon', auth, async (req, res) => {
 })
 // Thêm coupon
 // admin auth
-adminCoupon.post('/coupon/add', auth, async (req, res) => {
+adminCoupon.post('/coupon/add', authWithoutData, async (req, res) => {
     try {
 
         const { expired_time, code, content, amount, max_apply, condition } = req.body;
@@ -48,7 +48,7 @@ adminCoupon.post('/coupon/add', auth, async (req, res) => {
 
     }
 })
-adminCoupon.post('/coupon/update', auth, async (req, res) => {
+adminCoupon.post('/coupon/update', authWithoutData, async (req, res) => {
     try {
 
         const { expired_time, code, content, amount, max_apply, condition } = req.body;

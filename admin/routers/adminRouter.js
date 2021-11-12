@@ -1,6 +1,6 @@
 const express = require('express')
 const Admin = require('../models/user')
-const auth = require('../middleware/auth')
+const { auth, authWithoutData } = require('../middleware/auth')
 const bcrypt = require('bcryptjs')
 
 

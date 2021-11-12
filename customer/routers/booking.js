@@ -1,11 +1,12 @@
 const express = require('express')
 const Booking = require('../models/booking')
 const Journeys = require('../../driver/models/journeys')
-const Notification_driver = require('../../driver/models/notification')
-const auth = require('../middleware/auth')
+
+
+const { auth, authWithoutData } = require('../middleware/auth')
 const authDriver = require('../../driver/middleware/auth')
-const { findingJouneys } = require('../worker/workerBooking')
-require('../worker/workerBookingProcess')
+
+
 const routerBooking = express.Router()
 const mongoose = require('mongoose');
 
@@ -51,7 +52,7 @@ function getMinDistance(origin, route) {
 
 }
 
-routerBooking.post('/booking/cancel', auth, async (req, res) => {
+routerBooking.post('/booking/cancel', authWithoutData, async (req, res) => {
     try {
         const { id, reason } = req.body
         const booking = await Booking.findOne({
@@ -74,7 +75,7 @@ routerBooking.post('/booking/cancel', auth, async (req, res) => {
         res.status(400).send({ err: true, error })
     }
 })
-routerBooking.get('/booking/driver/getdatabooking', authDriver.auth, async (req, res) => {
+routerBooking.get('/booking/driver/getdatabooking', authDriver.authWithoutData, async (req, res) => {
     try {
 
         const booking_id = req.query.booking_id
@@ -88,7 +89,7 @@ routerBooking.get('/booking/driver/getdatabooking', authDriver.auth, async (req,
 
     }
 })
-routerBooking.post('/booking/finish/:booking_id', auth, async (req, res) => {
+routerBooking.post('/booking/finish/:booking_id', authWithoutData, async (req, res) => {
     try {
         let booking_id = req.params.booking_id;
 
@@ -107,10 +108,10 @@ routerBooking.post('/booking/finish/:booking_id', auth, async (req, res) => {
 
     }
 })
-routerBooking.get('/booking/current', auth, async (req, res) => {
+routerBooking.get('/booking/current', authWithoutData, async (req, res) => {
     try {
         const currentBooking = await Booking
-            .findOne({ cus_id: req.user._id })
+            .findOne({ cus_id: req._id })
             .or([{ 'status': CONSTANT_STATUS_BOOKING.FINDING_DRIVER }, { 'status': CONSTANT_STATUS_BOOKING.PROCESSING }, { 'status': CONSTANT_STATUS_BOOKING.WAITING_DRIVER }])
             .sort({ $natural: -1 })
             .populate('driver_id', "phone avatar name license_plate").populate('journey_id', 'line_string from to');
@@ -121,7 +122,7 @@ routerBooking.get('/booking/current', auth, async (req, res) => {
 
     }
 })
-routerBooking.get('/booking/state', auth, async (req, res) => {
+routerBooking.get('/booking/state', authWithoutData, async (req, res) => {
     try {
         const { _id } = req.query
         const currentBooking = await Booking
@@ -194,19 +195,11 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
 
     }
 })
-// pushNotificationTo_User(
-//     ["f4hWrSKDYkI8u81l8HY88V:APA91bEzDWFcLKH8RNe1802c0xzFkETfuf3cbYf00ZqwSLp8o1-TQLea_vo7ShK-Ylso2WRoxhxZxGsjjPtsOqGzlncsEJGDUwNNtv4z_qMzTiHUgrRltrMNAgVPQnZ0jI3PSQeKGo0U"],
-//     'Có hành khách muốn đi chuyến xe của bạn',
-//     'Hãy xác nhận bạn có thể đón khách hay không nhé ^^',
-//     {
-//         type: CONSTANT_NOTIFICATION.CUSTOMER_REQUEST_TO_DRIVER,
-//         booking_id: "612e4d4437effaeb679e5ac0"
-//     })
 
-routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
+
+routerBooking.post('/booking/finding/driver', authWithoutData, async (req, res) => {
     // Create a new user
     try {
-        console.log("hello")
         const body_booking = {
             from: {
                 "loc": {
@@ -254,7 +247,7 @@ routerBooking.post('/booking/finding/driver', auth, async (req, res) => {
 
     }
 })
-routerBooking.post('/booking/finding/driver_delivery', auth, async (req, res) => {
+routerBooking.post('/booking/finding/driver_delivery', authWithoutData, async (req, res) => {
     // Create a new user
     try {
         const body_booking = {
@@ -304,7 +297,7 @@ routerBooking.post('/booking/finding/driver_delivery', auth, async (req, res) =>
 
     }
 })
-routerBooking.post('/booking/near/user', auth, async (req, res) => {
+routerBooking.post('/booking/near/user', authWithoutData, async (req, res) => {
     // Create a new user
     try {
         const { page_number, page_size } = req.query;
@@ -319,6 +312,8 @@ routerBooking.post('/booking/near/user', auth, async (req, res) => {
                 },
             },
         };
+        let time = Date.now()
+
         const dataJourney = await Journeys.paginate({
             routes: {
                 $nearSphere: {
@@ -332,6 +327,8 @@ routerBooking.post('/booking/near/user', auth, async (req, res) => {
             status: CONSTANT_STATUS_JOUNEYS.WAITING,
             time_end: { $gte: (Date.now() / 1000) >> 0 },
         }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_number, limit: page_size, forceCountFn: true });
+        console.log("respone time", (Date.now() - time) / 1000)
+
         res.status(200).send({ err: false, data: dataJourney.docs, total: dataJourney.totalDocs })
     } catch (error) {
         console.log("error", error)
@@ -340,7 +337,7 @@ routerBooking.post('/booking/near/user', auth, async (req, res) => {
     }
 })
 // get history booking
-routerBooking.get('/booking/history', auth, async (req, res) => {
+routerBooking.get('/booking/history', authWithoutData, async (req, res) => {
     try {
         const { page_nunmber, page_size, type } = req.query;
         if (!page_nunmber || !page_size) {
@@ -349,17 +346,17 @@ routerBooking.get('/booking/history', auth, async (req, res) => {
         }
         if (type) {
             if (type === 'delivery') {
-                const history = await Booking.paginate({ cus_id: req.user._id, $or: [{ status: CONSTANT_TYPE_BOOKING.COACH_DELIVERY_CAR }, { status: CONSTANT_TYPE_BOOKING.HYBIRD_DELIVERY_CAR }] }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_nunmber, limit: page_size, forceCountFn: true, sort: { $natural: -1 } });
+                const history = await Booking.paginate({ cus_id: req._id, $or: [{ status: CONSTANT_TYPE_BOOKING.COACH_DELIVERY_CAR }, { status: CONSTANT_TYPE_BOOKING.HYBIRD_DELIVERY_CAR }] }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_nunmber, limit: page_size, forceCountFn: true, sort: { $natural: -1 } });
 
                 res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
                 return
             }
-            const history = await Booking.paginate({ cus_id: req.user._id, status: type }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_nunmber, limit: page_size, forceCountFn: true, sort: { $natural: -1 } });
+            const history = await Booking.paginate({ cus_id: req._id, status: type }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_nunmber, limit: page_size, forceCountFn: true, sort: { $natural: -1 } });
 
             res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
             return
         }
-        const history = await Booking.paginate({ cus_id: req.user._id, }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_nunmber, limit: page_size, forceCountFn: true, sort: { $natural: -1 } });
+        const history = await Booking.paginate({ cus_id: req._id, }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_nunmber, limit: page_size, forceCountFn: true, sort: { $natural: -1 } });
         res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
     } catch (error) {
         console.log("error", error)
@@ -399,7 +396,7 @@ routerBooking.post('/booking/rating', auth, async (req, res) => {
 
     }
 })
-routerBooking.get('/booking/rating', auth, async (req, res) => {
+routerBooking.get('/booking/rating', authWithoutData, async (req, res) => {
     try {
         const { rating_id } = req.query;
         if (!rating_id) {

@@ -1,12 +1,12 @@
 const express = require('express')
 const Coupon_Code = require('../models/couponCode')
-const auth = require('../middleware/auth')
+const { auth, authWithoutData } = require('../middleware/auth')
 const auth_driver = require('../../driver/middleware/auth')
 const coupon_code_router = express.Router()
 
 
 // driver lấy chi tiết coupon
-coupon_code_router.get('/coupon/detail', auth_driver.auth, async (req, res) => {
+coupon_code_router.get('/coupon/detail', auth_driver.authWithoutData, async (req, res) => {
     try {
 
         const { code } = req.query;
@@ -25,7 +25,7 @@ coupon_code_router.get('/coupon/detail', auth_driver.auth, async (req, res) => {
 })
 
 // customer lấy chi tiết coupon
-coupon_code_router.get('/coupon/customer/detail', auth, async (req, res) => {
+coupon_code_router.get('/coupon/customer/detail', authWithoutData, async (req, res) => {
     try {
 
         const { code } = req.query;

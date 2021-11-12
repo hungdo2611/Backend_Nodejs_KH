@@ -1,6 +1,6 @@
 const express = require('express')
 const Journeys = require('../models/journeys')
-const { auth, authTransaction } = require('../middleware/auth')
+const { auth, authWithoutData } = require('../middleware/auth')
 const { CONSTANT_STATUS_JOUNEYS } = require('../../constant/index')
 const Booking = require('../../customer/models/booking')
 const Transaction = require('../models/transaction')
@@ -17,13 +17,10 @@ const { request } = require('express')
 
 
 function getPointNearest(minValue, userCoord, Arr) {
-    console.log("Arr", Arr)
-    console.log("userCoord", userCoord)
 
-    console.log("mindistance", minValue)
+
     const centerPoint = geolib.getCenter(Arr);
     const newDistance = geolib.getDistance(userCoord, centerPoint);
-    console.log("newDistance", newDistance)
 
     if (newDistance > minValue + 100) {
         const distance_from_1 = geolib.getDistance(userCoord, Arr[0]);
@@ -35,22 +32,9 @@ function getPointNearest(minValue, userCoord, Arr) {
     }
 }
 
-function convertData(data) {
-    const arr = data.response.route[0].leg[0].maneuver
-    let route = arr.map(vl => {
-        return [vl.position.longitude, vl.position.latitude]
-        // return {
-        //     distance: vl.length,
-        //     "loc": {
-        //         "type": "LineString",
-        //         "coordinates": [vl.position.longitude, vl.position.latitude]
-        //     },
-        // }
-    })
-    return route
-}
+
 //point pick suggestion for coach
-Journey_router.post('/journey/point/suggestion', auth, async (req, res) => {
+Journey_router.post('/journey/point/suggestion', authWithoutData, async (req, res) => {
     try {
         const { userPoint, lst_coord } = req.body;
 
@@ -78,7 +62,6 @@ Journey_router.post('/journey/point/suggestion', auth, async (req, res) => {
                 route[0],
                 route[1],
             );
-            console.log('distance', distance)
             if (minDistance == 0) {
                 minDistance = distance;
                 minIndex = 0
@@ -107,7 +90,7 @@ Journey_router.post('/journey/point/suggestion', auth, async (req, res) => {
 // pick up customer 
 
 
-Journey_router.post('/journey/finish/:journey_id', auth, async (req, res) => {
+Journey_router.post('/journey/finish/:journey_id', authWithoutData, async (req, res) => {
     try {
         const journey_id = req.params.journey_id;
 
@@ -129,7 +112,7 @@ Journey_router.post('/journey/finish/:journey_id', auth, async (req, res) => {
     }
 })
 
-Journey_router.post('/journey/start/:journey_id', auth, async (req, res) => {
+Journey_router.post('/journey/start/:journey_id', authWithoutData, async (req, res) => {
     try {
         const journey_id = req.params.journey_id;
 
@@ -149,7 +132,7 @@ Journey_router.post('/journey/start/:journey_id', auth, async (req, res) => {
 })
 
 // drop off booking 
-Journey_router.post('/journey/dropoff/customer', auth, async (req, res) => {
+Journey_router.post('/journey/dropoff/customer', authWithoutData, async (req, res) => {
     try {
         const { booking_id, journey_id } = req.body;
         const promise_booking = Booking.findOneAndUpdate({ _id: booking_id }, { status: CONSTANT_STATUS_BOOKING.END }).populate("cus_id", 'device_token');;
@@ -183,7 +166,7 @@ Journey_router.post('/journey/dropoff/customer', auth, async (req, res) => {
 })
 
 // pickup booking 
-Journey_router.post('/journey/pickup/customer', auth, async (req, res) => {
+Journey_router.post('/journey/pickup/customer', authWithoutData, async (req, res) => {
     try {
         const { booking_id, journey_id } = req.body;
         const promise_booking = Booking.findOneAndUpdate({ _id: booking_id }, { status: CONSTANT_STATUS_BOOKING.PROCESSING }).populate("cus_id", 'device_token');;
@@ -191,7 +174,6 @@ Journey_router.post('/journey/pickup/customer', auth, async (req, res) => {
         const all_data = await Promise.all([promise_booking, promise_journey]);
         let data_booking = all_data[0];
         let data_journeys = all_data[1];
-        console.log("data_journeys.lst_pickup_point", data_journeys.lst_pickup_point)
         const index = data_journeys.lst_pickup_point.findIndex(dt => {
             return dt.booking_id == booking_id;
         })
@@ -215,11 +197,11 @@ Journey_router.post('/journey/pickup/customer', auth, async (req, res) => {
     }
 
 })
-Journey_router.post('/journey/accept/booking', authTransaction, async (req, res) => {
+Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
     const session = await mongoose.startSession();
     try {
         const opts = { session, returnOriginal: false };
-
+        console.log("accept booking")
         const { booking_id, journey_id, price, suggestion_pick } = req.body
         if (!booking_id || !journey_id || !price) {
             session.endSession();
@@ -281,7 +263,7 @@ Journey_router.post('/journey/accept/booking', authTransaction, async (req, res)
                 content: `Hoàn tiền khách hàng áp dụng mã giảm giá`,
                 amount: reduce_value
             })
-            const promise_save_trans_coupon = transaction_coupon.save(opts);
+            const promise_save_trans_coupon = reduce_value > 0 ? transaction_coupon.save(opts) : null;
             // set data for booking
             data_booking.status = CONSTANT_STATUS_BOOKING.WAITING_DRIVER;
             data_booking.journey_id = journey_id;
@@ -332,9 +314,9 @@ Journey_router.post('/journey/accept/booking', authTransaction, async (req, res)
     }
 })
 // get current journey
-Journey_router.get('/journey/current', auth, async (req, res) => {
+Journey_router.get('/journey/current', authWithoutData, async (req, res) => {
     try {
-        const currentJourney = await Journeys.findOne({ driver_id: req.user._id }).or([{ 'status': CONSTANT_STATUS_JOUNEYS.WAITING }, { 'status': CONSTANT_STATUS_JOUNEYS.STARTED }]).sort({ $natural: -1 })
+        const currentJourney = await Journeys.findOne({ driver_id: req._id }).or([{ 'status': CONSTANT_STATUS_JOUNEYS.WAITING }, { 'status': CONSTANT_STATUS_JOUNEYS.STARTED }]).sort({ $natural: -1 })
         res.status(200).send({ err: false, data: currentJourney })
     } catch (error) {
         console.log("error", error)
@@ -343,18 +325,18 @@ Journey_router.get('/journey/current', auth, async (req, res) => {
     }
 })
 // get history journey
-Journey_router.get('/journey/history', auth, async (req, res) => {
+Journey_router.get('/journey/history', authWithoutData, async (req, res) => {
     try {
         const { page_nunmber, page_size, type } = req.query;
         if (!page_nunmber || !page_size) {
             res.status(400).send({ err: true, data: 'missing param' })
         }
         if (type) {
-            const history = await Journeys.paginate({ driver_id: req.user._id, status: type }, { page: page_nunmber, limit: page_size, sort: { $natural: -1 } });
+            const history = await Journeys.paginate({ driver_id: req._id, status: type }, { page: page_nunmber, limit: page_size, sort: { $natural: -1 } });
             res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
             return
         }
-        const history = await Journeys.paginate({ driver_id: req.user._id, }, { page: page_nunmber, limit: page_size, sort: { $natural: -1 } });
+        const history = await Journeys.paginate({ driver_id: req._id, }, { page: page_nunmber, limit: page_size, sort: { $natural: -1 } });
         console.log("history", history)
         res.status(200).send({ err: false, data: history.docs, total: history.totalDocs })
     } catch (error) {

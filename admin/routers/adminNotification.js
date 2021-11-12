@@ -1,5 +1,5 @@
 const express = require('express')
-const auth = require('../middleware/auth')
+const { auth, authWithoutData } = require('../middleware/auth')
 
 const adminNotification = express.Router()
 const { pushNotificationToTopic } = require('../../utils/index')
@@ -8,7 +8,7 @@ const APP_NAME = {
     Driver: 'Driver',
     Customer: 'Customer'
 }
-adminNotification.post('/admin/notification', auth, async (req, res) => {
+adminNotification.post('/admin/notification', authWithoutData, async (req, res) => {
     try {
         const { app_name, title, body, data } = req.body;
         pushNotificationToTopic(app_name, title, body, data)

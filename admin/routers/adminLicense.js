@@ -1,6 +1,6 @@
 const express = require('express')
 const Admin = require('../models/user')
-const auth = require('../middleware/auth')
+const { auth, authWithoutData } = require('../middleware/auth')
 const License = require('../../driver/models/license')
 const Driver = require('../../driver/models/driver')
 
@@ -14,7 +14,7 @@ const status = {
     FAILED: 'FAILED'
 }
 
-adminLicense.get('/admin/license', auth, async (req, res) => {
+adminLicense.get('/admin/license', authWithoutData, async (req, res) => {
     try {
         const { page_number, page_size } = req.query;
         if (!page_number || !page_size) {
@@ -37,7 +37,7 @@ adminLicense.get('/admin/license', auth, async (req, res) => {
 })
 /// phê duyệt license, require admin auth
 
-adminLicense.post('/admin/license/approve', auth, async (req, res) => {
+adminLicense.post('/admin/license/approve', authWithoutData, async (req, res) => {
     try {
         const { license_id } = req.body;
         let data_license = await License.findOne({ _id: license_id })
@@ -63,7 +63,7 @@ adminLicense.post('/admin/license/approve', auth, async (req, res) => {
 
     }
 })
-adminLicense.post('/admin/license/decline', auth, async (req, res) => {
+adminLicense.post('/admin/license/decline', authWithoutData, async (req, res) => {
     try {
         const { license_id, reason } = req.body;
         let data_license = await License.findOne({ _id: license_id })

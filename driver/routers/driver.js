@@ -171,27 +171,15 @@ driver_router.post('/driver/login', async (req, res) => {
 driver_router.post('/driver/me/logout', auth, async (req, res) => {
     // Log user out of the application
     try {
-        req.user.tokens = req.user.tokens.filter((token) => {
-            return token.token != req.token
-        })
         req.user.device_token = ''
         await req.user.save()
         res.send({ err: false, data: "success" })
     } catch (error) {
+        console.log("error", error)
         res.status(500).send(error)
     }
 })
-//logout all
-driver_router.post('/driver/me/logoutall', auth, async (req, res) => {
-    // Log user out of all devices
-    try {
-        req.user.tokens.splice(0, req.user.tokens.length)
-        await req.user.save()
-        res.send({ err: false, data: "success" })
-    } catch (error) {
-        res.status(500).send(error)
-    }
-})
+
 //update profile api
 driver_router.post('/driver/profile', auth, async (req, res) => {
     // Create a new user
@@ -200,7 +188,6 @@ driver_router.post('/driver/profile', auth, async (req, res) => {
         //     password: '',
         //     name: ''
         // }
-        console.log("req data", req.user)
         if (req.body.password.length < 6) {
             res.status(404).send({ data: null, err: "Password min length is 6" })
             return
@@ -221,12 +208,7 @@ driver_router.post('/driver/profile', auth, async (req, res) => {
     }
 })
 driver_router.post('/driver/info', auth, async (req, res) => {
-    // Create a new user
     try {
-        // const body = {
-        //     password: '',
-        //     name: ''
-        // }
 
         req.user.name = req.body.name;
         req.user.avatar = req.body.avatar;
@@ -244,11 +226,7 @@ driver_router.post('/driver/info', auth, async (req, res) => {
 //reset password
 driver_router.post('/driver/reset/password', async (req, res) => {
     try {
-        // const bodysample = {
-        //     token: token,
-        //     phone: phone,
-        //     password: password
-        // }
+
         const tokenFirebase = req.body.token;
         let verify = await admin.auth().verifyIdToken(tokenFirebase);
 
