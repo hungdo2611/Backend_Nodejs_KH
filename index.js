@@ -19,7 +19,7 @@ const Journey_router = require('./driver/routers/journeys')
 const notification_router = require("./driver/routers/notification_router")
 const license_router = require('./driver/routers/licenseRouter')
 const transaction_router = require('./driver/routers/transactionRouter')
-
+const charge_router = require('./driver/routers/charge_router')
 //admin
 const adminRouter = require('./admin/routers/adminRouter')
 const adminDriver = require('./admin/routers/adminDriver')
@@ -27,7 +27,10 @@ const adminCustomer_router = require('./admin/routers/adminCustomer')
 const adminLicense = require('./admin/routers/adminLicense')
 const adminCoupon = require('./admin/routers/adminCoupon')
 const adminNotification = require('./admin/routers/adminNotification')
+const adminCharge = require('./admin/routers/adminCharge')
 
+
+//
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require("swagger-jsdoc")
 const port = process.env.PORT
@@ -81,6 +84,9 @@ app.use(driver_router)
 app.use(notification_router)
 app.use(license_router)
 app.use(transaction_router)
+app.use(charge_router)
+app.use(adminCharge)
+
 
 
 
