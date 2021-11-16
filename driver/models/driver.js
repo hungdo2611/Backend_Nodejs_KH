@@ -22,6 +22,7 @@ const driver_Schema = mongoose.Schema({
         type: String,
         required: true,
         unique: true,
+        index: true,
         lowercase: true,
         validate: value => {
             if (!isValidPhoneNumber(value, 'VN')) {
@@ -92,7 +93,7 @@ driver_Schema.pre('save', async function (next) {
 driver_Schema.methods.generateAuthToken = async function () {
     // Generate an auth token for the user
     const user = this
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY_DRIVER)
+    const token = jwt.sign({ _id: user._id, is_active: user.is_active }, process.env.JWT_KEY_DRIVER)
     await user.save()
     return token
 }

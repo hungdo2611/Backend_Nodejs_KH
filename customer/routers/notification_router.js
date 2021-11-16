@@ -5,16 +5,15 @@ const { getRedisData, setRedisData } = require('../../utils')
 const { REDIS_KEY } = require('../../constant')
 const notification_router = express.Router()
 
-notification_router.get('/notification', authWithoutData, async (req, res) => {
+notification_router.get('/customer/notification', authWithoutData, async (req, res) => {
     try {
-        let dataRedis = await getRedisData(REDIS_KEY.NOTIFICATION_DRIVER);
+        let dataRedis = await getRedisData(REDIS_KEY.NOTIFICATION_CUSTOMER);
         if (dataRedis) {
-            console.log("dataRedis", dataRedis)
             res.status(200).send({ err: false, data: dataRedis })
             return
         } else {
             const notifications = await Notification.paginate({}, { page: 1, limit: 20, sort: { $natural: -1 } });
-            await setRedisData(REDIS_KEY.NOTIFICATION_DRIVER, notifications.docs);
+            await setRedisData(REDIS_KEY.NOTIFICATION_CUSTOMER, notifications.docs);
             res.status(200).send({ err: false, data: notifications.docs })
         }
 

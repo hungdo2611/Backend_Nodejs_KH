@@ -76,6 +76,7 @@ adminCharge.post('/admin/charge/accept', authWithoutData, async (req, res) => {
             let crr_charge = await Charge.findOne({ _id: id });
             crr_charge.status = status_charge.ACCEPT;
             let driver = await Driver.findOne({ _id: crr_charge.driver_id });
+            console.log("driver", driver)
             driver.point = driver.point + crr_charge.amount;
             const transaction_charge = new Transaction({
                 driver_id: driver._id,
@@ -92,7 +93,7 @@ adminCharge.post('/admin/charge/accept', authWithoutData, async (req, res) => {
                 [driver.device_token],
                 'Yêu cầu nạp tiền thành công', 'Hãy kiểm tra tài khoản ngay nhé',
                 {
-                    type: CONSTANT_NOTIFICATION.CHARGE_MONEY_SUCCESS
+                    type: CONSTANT_NOTIFICATION.CHARGE_MONEY_SUCCESS,
                 })
             res.status(200).send({ err: false, data: "success" })
 

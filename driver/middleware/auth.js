@@ -12,6 +12,7 @@ const auth = async (req, res, next) => {
         }
         if (!user.is_active) {
             res.status(444).send({ error: 'Tài khoản đã bị khoá. Vui lòng liên hệ với admin để được nhận hỗ trợ' })
+            return
         }
         req.user = user
         req.token = token
@@ -27,6 +28,10 @@ const authWithoutData = async (req, res, next) => {
         const token = req.header('Authorization').replace('Bearer ', '')
         const data = jwt.verify(token, process.env.JWT_KEY_DRIVER)
         req._id = data._id;
+        if (!data.is_active) {
+            res.status(444).send({ error: 'Tài khoản đã bị khoá. Vui lòng liên hệ với admin để được nhận hỗ trợ' })
+            return
+        }
         next()
     } catch (error) {
         res.status(401).send({ error: 'Not authorized to access this resource' })

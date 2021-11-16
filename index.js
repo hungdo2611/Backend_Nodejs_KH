@@ -9,11 +9,12 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
 const cors = require('cors');
-
+// customer
 const customer_router = require('./customer/routers/user')
 const routerBooking = require("./customer/routers/booking")
 const coupon_code_router = require('./customer/routers/coupon_router')
-
+const notification_router_customer = require('./customer/routers/notification_router')
+//driver
 const { driver_router } = require('./driver/routers/driver')
 const Journey_router = require('./driver/routers/journeys')
 const notification_router = require("./driver/routers/notification_router")
@@ -77,6 +78,8 @@ app.use(adminNotification)
 app.use(customer_router)
 app.use(routerBooking)
 app.use(coupon_code_router)
+app.use(notification_router_customer)
+
 
 //driver
 app.use(Journey_router)

@@ -5,9 +5,11 @@ const parsePhoneNumber = require('libphonenumber-js')
 
 const Driver = require('../../driver/models/driver')
 const Journey = require('../../driver/models/journeys')
-const { CONSTANT_NOTIFICATION } = require('../../constant')
+const { CONSTANT_NOTIFICATION, TYPE_TRANSACTION } = require('../../constant')
 const { pushNotificationTo_User, pushNotificationToTopic } = require('../../utils/index')
-
+const mongoose = require('mongoose')
+const Charge = require('../../driver/models/charge')
+const Transaction = require('../../driver/models/transaction')
 const adminDriver = express.Router()
 adminDriver.get('/admin/driver', authWithoutData, async (req, res) => {
     try {
@@ -122,9 +124,47 @@ adminDriver.get('/admin/driver/recentJourney', authWithoutData, async (req, res)
     } catch (error) {
         console.log("error", error)
         res.status(400).send({ err: true, error })
-
     }
 
+})
+
+adminDriver.post('/admin/driver/addpoint', authWithoutData, async (req, res) => {
+    const session = await mongoose.startSession();
+
+    try {
+        const { id, point, title, body } = req.body;
+        if (!id || !point || !title || !body) {
+            res.status(400).send({ err: true, data: 'missing param' })
+        }
+        await session.withTransaction(async () => {
+            const opts = { session, returnOriginal: false };
+            let driver = await Driver.findOne({ _id: id });
+            driver.point = driver.point + point;
+            const transaction_charge = new Transaction({
+                driver_id: driver._id,
+                time: (Date.now() / 1000) >> 0,
+                type: TYPE_TRANSACTION.ADD_CHARGE_MONEY,
+                content: title,
+                amount: point
+            })
+            const promise_save_driver = driver.save(opts);
+            const promise_save_transaction = transaction_charge.save(opts)
+            const save_action = await Promise.all([promise_save_driver, promise_save_transaction])
+            pushNotificationTo_User(
+                [driver.device_token],
+                title, body,
+                {
+                    type: CONSTANT_NOTIFICATION.CHARGE_MONEY_SUCCESS,
+                })
+            res.status(200).send({ err: false, data: "success" })
+        })
+        session.endSession();
+    } catch (error) {
+        console.log("error", error)
+        session.endSession();
+        res.status(400).send({ err: true, error })
+
+    }
 })
 
 module.exports = adminDriver;

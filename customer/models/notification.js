@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const mongoosePaginate = require('mongoose-paginate-v2');
 
 
-const notification_schema = mongoose.Schema({
+const notification_customer = mongoose.Schema({
     time: {
         type: Number,
         required: true,
@@ -24,8 +24,8 @@ const notification_schema = mongoose.Schema({
 })
 
 
-notification_schema.plugin(mongoosePaginate);
+notification_customer.plugin(mongoosePaginate);
 
-const Notification = mongoose.model('notification_schema', notification_schema)
+const Notification_Customer = mongoose.model('notification_customer', notification_customer)
 
-module.exports = Notification
+module.exports = Notification_Customer

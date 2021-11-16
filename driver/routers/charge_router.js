@@ -27,7 +27,19 @@ charge_router.post('/charge/request', authWithoutData, async (req, res) => {
 
     }
 })
+// recharge request
+charge_router.post('/charge/request/again', authWithoutData, async (req, res) => {
+    try {
+        const { id, image } = req.query;
+        const chargeRequest = await Charge.findOneAndUpdate({ _id: id }, { status: status_charge.REQUESTING, image: image }, { new: true })
 
+        res.status(200).send({ err: false, data: chargeRequest })
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send({ err: true, error })
+
+    }
+})
 //cancel request charge
 charge_router.post('/charge/cancel', authWithoutData, async (req, res) => {
     try {

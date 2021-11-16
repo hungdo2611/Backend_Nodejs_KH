@@ -19,6 +19,7 @@ const customer_Schema = mongoose.Schema({
         type: String,
         required: true,
         unique: true,
+        index: true,
         lowercase: true,
         validate: value => {
             if (!isValidPhoneNumber(value, 'VN')) {
@@ -87,7 +88,7 @@ customer_Schema.plugin(mongoosePaginate);
 customer_Schema.methods.generateAuthToken = async function () {
     // Generate an auth token for the user
     const user = this
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY_CUSTOMER)
+    const token = jwt.sign({ _id: user._id, is_active: user.is_active }, process.env.JWT_KEY_CUSTOMER)
     await user.save()
     return token
 }
