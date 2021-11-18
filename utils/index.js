@@ -14,16 +14,18 @@ client.on('connect', () => {
 });
 
 async function pushNotificationTo_User(lst, title, body, data) {
-    const send = await admin.messaging().sendMulticast({
-        tokens: lst,
-        data: data,
-        notification: {
-            title: title,
-            body: body,
+    if (lst && Array.isArray(lst)) {
+        const send = await admin.messaging().sendMulticast({
+            tokens: lst,
+            data: data,
+            notification: {
+                title: title,
+                body: body,
 
-        },
-    });
-    console.log("send status", send)
+            },
+        });
+        console.log("send status", send)
+    }
 
 }
 
@@ -32,8 +34,7 @@ async function pushNotificationToTopic(topic, title, body, data) {
         notification: {
             title: title,
             body: body,
-            sound: 'defaulf',
-            badge: '1'
+            sound: 'defaulf'
         },
         data: data,
 

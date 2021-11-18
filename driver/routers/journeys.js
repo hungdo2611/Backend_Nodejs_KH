@@ -202,13 +202,14 @@ Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
     try {
         const opts = { session, returnOriginal: false };
         console.log("accept booking")
-        const { booking_id, journey_id, price, suggestion_pick } = req.body
+        let { booking_id, journey_id, price, suggestion_pick } = req.body
         if (!booking_id || !journey_id || !price) {
             session.endSession();
             res.status(200).send({ err: true, data: 'missing param' })
             return
         }
         //
+        price = Math.abs(price);
         let user = req.user;
         const formatPrice = Math.abs(price);
         const value_service_charge = formatPrice * SERVICE_CHARGE;
