@@ -44,7 +44,7 @@ adminLicense.post('/admin/license/approve', authWithoutData, async (req, res) =>
         if (data_license.status === status.VERIFYING) {
             data_license.status = status.VERIFIED;
             await data_license.save();
-            const driver = await Driver.findOneAndUpdate({ _id: data_license.driver_id }, { license_plate: data_license.license_plate }, { new: true });
+            const driver = await Driver.findOneAndUpdate({ _id: data_license.driver_id }, { license_plate: data_license.license_plate, vehicle_type: data_license.vehicle_type }, { new: true });
             pushNotificationTo_User(
                 [driver.device_token],
                 'Tài khoản đã xác thực',

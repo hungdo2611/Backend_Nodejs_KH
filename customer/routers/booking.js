@@ -178,7 +178,8 @@ routerBooking.post('/booking/create', auth, async (req, res) => {
 
         }
 
-        const { lst_devicetoken, list_driverId } = req.body;
+        const { lst_devicetoken } = req.body;
+        console.log('lst_devicetoken', lst_devicetoken)
         pushNotificationTo_User(
             lst_devicetoken,
             'Có hành khách yêu cầu',
@@ -215,6 +216,7 @@ routerBooking.post('/booking/finding/driver', authWithoutData, async (req, res) 
             },
 
         };
+        const crrTime = Date.now();
         const dataJourney = await Journeys.find({
             routes: {
                 $nearSphere: {
@@ -238,8 +240,7 @@ routerBooking.post('/booking/finding/driver', authWithoutData, async (req, res) 
             journey_type: req.body.journey_type,
             allow_Customer: true,
             status: { $ne: CONSTANT_STATUS_JOUNEYS.END }
-        }).populate('driver_id', "phone avatar name device_token ratingPoint license_plate verified_status");
-        console.log('dataJourney', dataJourney)
+        }).populate('driver_id', "phone avatar name device_token ratingPoint license_plate verified_status vehicle_type").limit(20);
         res.status(201).send({ err: false, data: dataJourney });
     } catch (error) {
         console.log("error", error)
@@ -247,6 +248,33 @@ routerBooking.post('/booking/finding/driver', authWithoutData, async (req, res) 
 
     }
 })
+
+routerBooking.post('/booking/free/driver', authWithoutData, async (req, res) => {
+    try {
+        const { from } = req.body;
+        const driverFree = await Driver.find(
+            {
+                free_state: true,
+                last_location: {
+                    $near: {
+                        $geometry: {
+                            type: "Point",
+                            coordinates: [from.lng, from.lat]
+                        },
+                        $maxDistance: 5000
+                    }
+                },
+            },
+        ).limit(20)
+        console.log('driverFree', driverFree)
+        res.status(200).send({ err: false, data: driverFree });
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send({ err: true, error })
+
+    }
+})
+
 routerBooking.post('/booking/finding/driver_delivery', authWithoutData, async (req, res) => {
     // Create a new user
     try {
@@ -288,7 +316,7 @@ routerBooking.post('/booking/finding/driver_delivery', authWithoutData, async (r
             journey_type: req.body.journey_type,
             allow_Shipping: true,
             status: { $ne: CONSTANT_STATUS_JOUNEYS.END }
-        }).populate('driver_id', "phone avatar name device_token ratingPoint license_plate verified_status");
+        }).populate('driver_id', "phone avatar name device_token ratingPoint license_plate verified_status vehicle_type").limit(20);
         console.log('dataJourney', dataJourney)
         res.status(201).send({ err: false, data: dataJourney });
     } catch (error) {

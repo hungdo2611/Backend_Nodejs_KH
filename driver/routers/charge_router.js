@@ -56,6 +56,10 @@ charge_router.post('/transfer/driver', auth, async (req, res) => {
                 res.status(200).send({ err: true, data: 'SAME_ID' })
                 return
             }
+            if (req.user.point < amount) {
+                session.endSession();
+                res.status(200).send({ err: true, data: 'NOT_ENOUGH_MONEY' })
+            }
 
             let driverReceived = await Driver.findOne({ _id: id });
             driverReceived.point = driverReceived.point + amount;

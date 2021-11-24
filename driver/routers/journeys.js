@@ -1,7 +1,7 @@
 const express = require('express')
 const Journeys = require('../models/journeys')
 const { auth, authWithoutData } = require('../middleware/auth')
-const { CONSTANT_STATUS_JOUNEYS } = require('../../constant/index')
+const { CONSTANT_STATUS_JOUNEYS, CONSTANT_TYPE_JOURNEYS } = require('../../constant/index')
 const Booking = require('../../customer/models/booking')
 const Transaction = require('../models/transaction')
 const Coupon = require('../../customer/models/couponCode')
@@ -197,6 +197,150 @@ Journey_router.post('/journey/pickup/customer', authWithoutData, async (req, res
     }
 
 })
+Journey_router.post('/journey/accept/booking/freestate', auth, async (req, res) => {
+    const session = await mongoose.startSession();
+    try {
+        const opts = { session, returnOriginal: false };
+        let { booking_id, price, suggestion_pick, price_list, route } = req.body
+        if (!booking_id || !price || !route) {
+            session.endSession();
+            res.status(200).send({ err: true, data: 'missing param' })
+            return
+        }
+        //
+        price = Math.abs(price);
+        let user = req.user;
+        const formatPrice = Math.abs(price);
+        const value_service_charge = formatPrice * SERVICE_CHARGE;
+        if (user.point < value_service_charge) {
+            session.endSession();
+            res.status(200).send({ err: true, data: null, message: 'Số dự coin không đủ để nhận chuyến đi này. Vui lòng nạp thêm coin để có thể nhận thêm chuyến đi này' })
+            return
+        }
+
+        //
+        await session.withTransaction(async () => {
+            let data_booking = await Booking.findOne({ _id: booking_id }).populate("cus_id", 'device_token name phone avatar');
+            if (data_booking.status != CONSTANT_STATUS_BOOKING.FINDING_DRIVER) {
+                session.endSession();
+                res.status(200).send({ err: true, data: null, message: 'Chuyến đi này đã có tài xế khác nhận rồi. Hãy nhanh tay nhận chuyến ở lần sau nhé ^^' })
+                return
+            }
+
+
+            let reduce_value = 0;
+            if (data_booking.coupon_code) {
+                const time_now = (Date.now() / 1000) >> 0
+                const coupon_detail = await Coupon.findOne({ code: data_booking.coupon_code })
+                if (coupon_detail && coupon_detail?.expired_time > time_now) {
+                    const { amount, max_apply, condition } = coupon_detail;
+
+                    if (amount < 100) {
+                        reduce_value = price * amount / 100;
+                        if (reduce_value > max_apply) {
+                            reduce_value = max_apply
+                        }
+                    } else {
+                        reduce_value = amount;
+                    }
+                    if (price < condition?.min_Price) {
+                        reduce_value = 0;
+                    }
+                }
+            }
+            console.log("reduce_value", reduce_value)
+            const transaction_coupon = new Transaction({
+                driver_id: user._id,
+                time: (Date.now() / 1000) >> 0,
+                type: TYPE_TRANSACTION.RETURN_APPLY_COUPON,
+                content: `Hoàn tiền khách hàng áp dụng mã giảm giá`,
+                amount: reduce_value
+            })
+            const promise_save_trans_coupon = reduce_value > 0 ? transaction_coupon.save(opts) : null;
+            // create journeys
+            const xHour = (data_booking.distance / 30) >> 0;
+            const hourSec = 60 * 60 * xHour;
+            const info_cus = { name: data_booking.cus_id.name, phone: data_booking.cus_id.phone, avatar: data_booking.cus_id.avatar, price: price - reduce_value, from: data_booking.from, seat: data_booking.seat }
+
+            const pickup_point = {
+                booking_id: data_booking._id,
+                lat: data_booking?.from?.loc?.coordinates[1],
+                lng: data_booking?.from?.loc?.coordinates[0],
+                address: data_booking?.from?.address,
+                info: info_cus,
+                isPick: false,
+                orderInfo: data_booking.orderInfo
+            };
+            const bodyJourney = {
+                driver_id: req.user._id,
+                from: data_booking.from,
+                to: data_booking.to,
+                allow_Shipping: true,
+                allow_Customer: true,
+                distance: data_booking.distance,
+                time_start: (Date.now() / 1000) >> 0,
+                time_end: ((Date.now() / 1000) >> 0) + hourSec,
+                price: price_list,
+                price_shipping: price_list,
+                line_string: data_booking.line_string,
+                routes: {
+                    "type": "LineString",
+                    "coordinates": req.body.route
+                },
+                lst_pickup_point: [pickup_point],
+                lst_booking_id: [booking_id],
+                journey_type: CONSTANT_TYPE_JOURNEYS.HYBIRD_CAR
+            }
+            let newJourney = new Journeys(bodyJourney);
+            let savedJourney = await newJourney.save(opts);
+
+            // set data for booking
+            data_booking.status = CONSTANT_STATUS_BOOKING.WAITING_DRIVER;
+            data_booking.journey_id = savedJourney._id;
+            data_booking.driver_id = req.user._id;
+            data_booking.price = price;
+            data_booking.suggestion_pick = suggestion_pick;
+            const promise_save_booking = data_booking.save(opts);
+            //set data for journey
+
+
+            // trừ point
+            user.point = user.point - formatPrice * SERVICE_CHARGE + reduce_value;
+            user.free_state = false;
+            const transaction = new Transaction({
+                driver_id: user._id,
+                time: (Date.now() / 1000) >> 0,
+                type: TYPE_TRANSACTION.ACCEPT_BOOKING,
+                content: `Trừ coin để nhận chuyến`,
+                amount: value_service_charge
+            })
+            const promise_save_trans = transaction.save(opts);
+
+
+            const promise_save_user = user.save(opts);
+            const save_action = await Promise.all([promise_save_user, promise_save_booking, promise_save_trans, promise_save_trans_coupon])
+            pushNotificationTo_User(
+                [data_booking.cus_id.device_token],
+                'Đã có tài xế nhận đón bạn', 'Hãy bấm vào đây để xem chi tiết chuyến xe',
+                {
+                    type: CONSTANT_NOTIFICATION.DRIVER_ACEEPT_BOOKING,
+                    journey_id: savedJourney._id,
+                    booking_id: booking_id
+                })
+            res.status(200).send({ err: false, data: { data_booking: 'success', data_journeys: savedJourney } })
+
+        })
+
+
+
+        session.endSession();
+    } catch (error) {
+        console.log("error123", error)
+        session.endSession();
+        res.status(400).send({ err: true, error })
+
+    }
+})
 Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
     const session = await mongoose.startSession();
     try {
@@ -275,7 +419,7 @@ Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
             //set data for journey
             data_journeys.lst_booking_id = [...data_journeys.lst_booking_id, booking_id];
             const info_cus = { name: data_booking.cus_id.name, phone: data_booking.cus_id.phone, avatar: data_booking.cus_id.avatar, price: price - reduce_value, from: data_booking.from, seat: data_booking.seat }
-            data_journeys.lst_pickup_point = [...data_journeys.lst_pickup_point, { ...suggestion_pick, info: info_cus, isPick: false, booking_id: booking_id, booking_type: data_booking.booking_type, orderInfo: data_booking.orderInfo }]
+            data_journeys.lst_pickup_point = [...data_journeys.lst_pickup_point, { ...suggestion_pick, info: info_cus, isPick: false, booking_id: booking_id, orderInfo: data_booking.orderInfo }]
             const promise_save_journey = data_journeys.save(opts);
 
             // trừ point

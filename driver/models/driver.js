@@ -9,7 +9,6 @@ const Schema = mongoose.Schema;
 
 
 const driver_Schema = mongoose.Schema({
-    _id: Schema.Types.ObjectId,
     driver_id: {
         type: Number,
         required: false,
@@ -66,7 +65,30 @@ const driver_Schema = mongoose.Schema({
             default: 1
         }
     },
+    last_location: {
+        type: { type: String },
+        coordinates: []
+    },
+    last_update: Number,
+    free_state: {
+        type: Boolean,
+        default: false
+    },
+    price_free: [{
+        distance: {
+            type: Number,
+            required: false
+        },
+        value: {
+            type: Number,
+            required: false
+        }
+    }],
     license_plate: {
+        type: String,
+        required: false
+    },
+    vehicle_type: {
         type: String,
         required: false
     },
@@ -115,6 +137,9 @@ driver_Schema.statics.findByCredentials = async (phone, password) => {
     }
     return user
 }
+
+driver_Schema.index({ last_location: "2dsphere" });
+
 const Driver = mongoose.model('driver_schema', driver_Schema)
 
 module.exports = Driver

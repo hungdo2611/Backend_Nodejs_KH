@@ -1,6 +1,6 @@
 const express = require('express')
 const Driver = require('../models/driver')
-const { auth } = require('../middleware/auth')
+const { auth, authWithoutData } = require('../middleware/auth')
 const mongoose = require('mongoose');
 
 const driver_router = express.Router()
@@ -266,5 +266,49 @@ driver_router.get('/driver/recent/rating', async (req, res) => {
         res.status(500).send(error)
     }
 })
+driver_router.post('/driver/update/location', authWithoutData, async (req, res) => {
+    try {
+        const { lat, lng } = req.body;
+        const bodyUpdate = {
+            type: "Point",
+            coordinates: [lng, lat]
+        }
+        let update = await Driver.updateOne({ _id: req._id }, { last_location: bodyUpdate, last_update: Date.now() })
+        res.status(200).send({ err: false, data: 'success' })
+    } catch (error) {
+        res.status(500).send(error)
+    }
+})
 
+driver_router.post('/driver/enable/free', authWithoutData, async (req, res) => {
+    try {
+
+        let update = await Driver.updateOne({ _id: req._id }, { free_state: true })
+        res.status(200).send({ err: false, data: 'success' })
+    } catch (error) {
+        res.status(500).send(error)
+    }
+})
+
+driver_router.post('/driver/disable/free', authWithoutData, async (req, res) => {
+    try {
+        let update = await Driver.updateOne({ _id: req._id }, { free_state: false })
+        res.status(200).send({ err: false, data: 'success' })
+    } catch (error) {
+        res.status(500).send(error)
+    }
+})
+driver_router.post('/driver/update/pricefree', authWithoutData, async (req, res) => {
+    try {
+        const { price_free } = req.body;
+        if (!price_free) {
+            res.status(200).send({ err: true, data: 'missing param' })
+            return
+        }
+        let update = await Driver.updateOne({ _id: req._id }, { price_free: price_free })
+        res.status(200).send({ err: false, data: 'success' })
+    } catch (error) {
+        res.status(500).send(error)
+    }
+})
 module.exports = { driver_router };
