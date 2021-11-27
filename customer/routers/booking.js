@@ -236,7 +236,6 @@ routerBooking.post('/booking/finding/driver', authWithoutData, async (req, res) 
                     $maxDistance: 5000
                 }
             },
-            time_end: { $gte: (Date.now() / 1000) >> 0 },
             journey_type: req.body.journey_type,
             allow_Customer: true,
             status: { $ne: CONSTANT_STATUS_JOUNEYS.END }
