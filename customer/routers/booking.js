@@ -80,7 +80,9 @@ routerBooking.get('/booking/driver/getdatabooking', authDriver.authWithoutData, 
 
         const booking_id = req.query.booking_id
         console.log('booking_id', booking_id)
-        const databooking = await Booking.findOne({ _id: booking_id }).populate("cus_id", 'phone name avatar')
+        const databooking = await Booking.findOne({ _id: booking_id })
+            .populate("cus_id", 'phone name avatar')
+            .populate('driver_id', "phone avatar name license_plate");
         res.status(200).send({ err: false, data: databooking })
 
     } catch (error) {
@@ -93,7 +95,9 @@ routerBooking.post('/booking/finish/:booking_id', authWithoutData, async (req, r
     try {
         let booking_id = req.params.booking_id;
 
-        const currentBooking = await Booking.findOne({ _id: booking_id, });
+        const currentBooking = await Booking.findOne({ _id: booking_id, })
+            .populate("cus_id", 'phone name avatar')
+            .populate('driver_id', "phone avatar name license_plate");
         if (currentBooking.status === CONSTANT_STATUS_BOOKING.PROCESSING) {
             currentBooking.status = CONSTANT_STATUS_BOOKING.END;
             await currentBooking.save();
