@@ -17,10 +17,44 @@ const { pushNotificationTo_User } = require('../../utils/index')
 const { CONSTANT_NOTIFICATION, CONSTANT_STATUS_BOOKING, CONSTANT_STATUS_JOUNEYS, CONSTANT_TYPE_BOOKING } = require('../../constant/index')
 
 const Rating = require('../../driver/models/rating')
+const schedule = require('node-schedule');
 
 // Booking.deleteMany({}, (res) => {
 //     console.log('res delete', res)
 // })
+
+// 
+const job = schedule.scheduleJob('*/5 * * * *', async function () {
+    const crr_time = (Date.now() / 1000) >> 0;
+    const min = 60;
+    try {
+        console.log("schedule")
+        const list_booking_finding = await Booking.find(
+            { status: CONSTANT_STATUS_BOOKING.FINDING_DRIVER, time_start: { $gte: crr_time - min * 5 } })
+            .populate('cus_id', 'device_token');
+        let list_token = list_booking_finding.map(data => {
+            return data.cus_id.device_token;
+        })
+        console.log("list_token",list_token)
+
+        if (list_token.length > 0) {
+            pushNotificationTo_User(
+                list_token,
+                'Chuyến đi đã bị huỷ',
+                'Chuyến đi đã bị huỷ vì không có tài xế nào nhận chuyến. Xin vui lòng thử lại sau',
+                {
+                    type: CONSTANT_NOTIFICATION.SYSTEM_CANCLE_BOOKING
+                })
+        }
+
+        await Booking.updateMany(
+            { status: CONSTANT_STATUS_BOOKING.FINDING_DRIVER, time_start: { $gte: crr_time - min * 5 } },
+            { status: CONSTANT_STATUS_BOOKING.USER_CANCEL, reason_cancel: 'Chuyến đi đã bị huỷ vì không có tài xế nào nhận chuyến' },
+        )
+    } catch (err) {
+        console.log("error schedule job", err)
+    }
+});
 
 function getMinDistance(origin, route) {
     let arrRoute = []
@@ -66,7 +100,7 @@ routerBooking.post('/booking/cancel', authWithoutData, async (req, res) => {
             res.status(200).send({ err: true, message: "Không thể huỷ! Chuyến đã có tài xế nhận", data: booking })
             return
         }
-        booking.reason = reason;
+        booking.reason_cancel = reason;
         booking.status = CONSTANT_STATUS_BOOKING.USER_CANCEL;
         await booking.save();
         res.status(200).send({ err: false, data: booking })

@@ -64,10 +64,6 @@ const booking_Schema = mongoose.Schema({
         type: Number,
         required: true
     },
-    reason: {
-        type: String,
-        required: false
-    },
     suggestion_pick: {
         lat: {
             type: Number,
@@ -119,6 +115,10 @@ const booking_Schema = mongoose.Schema({
     rating_id: {
         type: Schema.Types.ObjectId,
         ref: 'rating_schema'
+    },
+    reason_cancel: {
+        type: String,
+        required: false
     }
 
 
