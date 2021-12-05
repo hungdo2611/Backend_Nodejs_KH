@@ -8,6 +8,7 @@ var admin = require("firebase-admin");
 const bcrypt = require('bcryptjs')
 const mongoose = require('mongoose')
 const License = require('../../driver/models/license')
+const https = require('https');
 
 
 
@@ -37,6 +38,86 @@ const formatUser = (user) => {
  *          description: A successful respone
 
  */
+
+
+
+customer_router.post('/users/login/facebook', async (req, res) => {
+    try {
+
+        const { access_token } = req.body;
+        const options = {
+            hostname: 'graph.facebook.com',
+            port: 443,
+            path: '/me?access_token=' + access_token,
+            method: 'GET'
+        }
+
+        const request = https.get(options, response => {
+            response.on('data', async function (user) {
+                user = JSON.parse(user.toString());
+                let customer = await Customer.findOne({ fb_id: user.id });
+                if (customer) {
+                    const token = await customer.generateAuthToken()
+                    const responeDt = formatUser(customer);
+                    res.status(200).send({ data: { ...responeDt, token }, token, err: false })
+                } else {
+                    res.status(200).send({ data: 'Customer not found', err: true, fb: user })
+                }
+                console.log("user", user);
+            });
+        })
+
+        request.on('error', (message) => {
+            console.log("error /users/login/facebook", message)
+            res.status(400).send({ err: true, error: message })
+        });
+
+        request.end();
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send({ err: true, error })
+    }
+})
+customer_router.post('/users/register/facebook', async (req, res) => {
+    try {
+        const { fb_id, phone, authtoken, name } = req.body
+        let isvalidate = isValidPhoneNumber(phone, 'VN');
+
+        if (!phone) {
+            res.status(404).send({ data: null, err: 'Missing Phone number' });
+            return
+        }
+
+        if (!isvalidate) {
+            res.status(404).send({ data: null, err: 'Phone number invalid' });
+            return
+        }
+        let verify = await admin.auth().verifyIdToken(authtoken);
+
+        const phoneNumber = parsePhoneNumber(phone, 'VN');
+
+        const bodyrequest = {
+            "_id": new mongoose.Types.ObjectId(),
+            phone: phoneNumber.number,
+            join_date: Date.now(),
+            is_active: true,
+            name: name,
+            fb_id: fb_id,
+
+        }
+        const user = new Customer(bodyrequest)
+        await user.save()
+        const token = await user.generateAuthToken()
+        const responeDt = formatUser(user);
+
+        res.status(200).send({ data: { ...responeDt, token }, token, err: false })
+
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send({ err: true, error })
+    }
+})
+
 //check phone exist api
 customer_router.get('/users/exist/:phone', async (req, res) => {
     // Create a new user
@@ -82,8 +163,7 @@ customer_router.post('/users/register/devicetoken', auth, async (req, res) => {
 customer_router.post('/users/register', async (req, res) => {
     // Create a new user
     try {
-        const tokenFirebase = req.body.token;
-        let verify = await admin.auth().verifyIdToken(tokenFirebase);
+
 
         let isvalidate = isValidPhoneNumber(req.body.phone, 'VN');
 
@@ -96,6 +176,9 @@ customer_router.post('/users/register', async (req, res) => {
             res.status(404).send({ data: null, err: 'Phone number invalid' });
             return
         }
+        const tokenFirebase = req.body.token;
+        let verify = await admin.auth().verifyIdToken(tokenFirebase);
+
         const phoneNumber = parsePhoneNumber(req.body.phone, 'VN')
         const bodyrequest = {
             "_id": new mongoose.Types.ObjectId(),
