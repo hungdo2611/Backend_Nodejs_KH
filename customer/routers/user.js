@@ -1,5 +1,5 @@
 const express = require('express')
-const Customer = require('../models/User')
+const Customer = require('../models/user')
 const { auth, authWithoutData } = require('../middleware/auth')
 const customer_router = express.Router()
 const parsePhoneNumber = require('libphonenumber-js')
