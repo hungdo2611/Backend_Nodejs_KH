@@ -37,7 +37,8 @@ const swaggerJsDoc = require("swagger-jsdoc")
 const geolib = require('geolib');
 require('./db/db')
 
-
+const path = require('path'); 
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 
 const options = {
@@ -90,7 +91,8 @@ app.use('/api', charge_router)
 app.use('/api', adminCharge)
 
 
-
+const port = process.env.PORT
+console.log('port env', port)
 
 
 
