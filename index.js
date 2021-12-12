@@ -65,29 +65,29 @@ app.use(cors({
 }));
 app.use(express.json())
 //admin
-app.use(adminRouter)
-app.use(adminDriver)
-app.use(adminCustomer_router)
-app.use(adminLicense)
-app.use(adminCoupon)
-app.use(adminNotification)
+app.use('/api', adminRouter)
+app.use('/api', adminDriver)
+app.use('/api', adminCustomer_router)
+app.use('/api', adminLicense)
+app.use('/api', adminCoupon)
+app.use('/api', adminNotification)
 
 
 //customer
-app.use(customer_router)
-app.use(routerBooking)
-app.use(coupon_code_router)
-app.use(notification_router_customer)
+app.use('/api', customer_router)
+app.use('/api', routerBooking)
+app.use('/api', coupon_code_router)
+app.use('/api', notification_router_customer)
 
 
 //driver
-app.use(Journey_router)
-app.use(driver_router)
-app.use(notification_router)
-app.use(license_router)
-app.use(transaction_router)
-app.use(charge_router)
-app.use(adminCharge)
+app.use('/api', Journey_router)
+app.use('/api', driver_router)
+app.use('/api', notification_router)
+app.use('/api', license_router)
+app.use('/api', transaction_router)
+app.use('/api', charge_router)
+app.use('/api', adminCharge)
 
 
 
