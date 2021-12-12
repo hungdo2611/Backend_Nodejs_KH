@@ -1,6 +1,9 @@
 const express = require('express')
 
 
+const path = require('path'); 
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
 var admin = require("firebase-admin");
 
 var serviceAccount = require("./be-booking-6dd8b-firebase-adminsdk-mhr7h-2e93874e1a.json");
@@ -37,8 +40,6 @@ const swaggerJsDoc = require("swagger-jsdoc")
 const geolib = require('geolib');
 require('./db/db')
 
-const path = require('path'); 
-require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 
 const options = {
