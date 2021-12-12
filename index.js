@@ -34,7 +34,6 @@ const adminCharge = require('./admin/routers/adminCharge')
 //
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require("swagger-jsdoc")
-const port = process.env.PORT
 const geolib = require('geolib');
 require('./db/db')
 
@@ -98,6 +97,6 @@ app.use(adminCharge)
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs))
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`)
+app.listen(3000, () => {
+    console.log(`Server running on port 3000`)
 })
