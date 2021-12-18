@@ -1,7 +1,7 @@
 const express = require('express')
 
 
-const path = require('path'); 
+const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 var admin = require("firebase-admin");
@@ -32,7 +32,7 @@ const adminLicense = require('./admin/routers/adminLicense')
 const adminCoupon = require('./admin/routers/adminCoupon')
 const adminNotification = require('./admin/routers/adminNotification')
 const adminCharge = require('./admin/routers/adminCharge')
-
+const adminBanner = require('./admin/routers/adminBanner')
 
 //
 const swaggerUi = require('swagger-ui-express');
@@ -73,7 +73,7 @@ app.use('/api', adminCustomer_router)
 app.use('/api', adminLicense)
 app.use('/api', adminCoupon)
 app.use('/api', adminNotification)
-
+app.use('/api', adminBanner)
 
 //customer
 app.use('/api', customer_router)
