@@ -30,7 +30,7 @@ const job = schedule.scheduleJob('*/5 * * * *', async function () {
     try {
         console.log("schedule")
         const list_booking_finding = await Booking.find(
-            { status: CONSTANT_STATUS_BOOKING.FINDING_DRIVER, time_start: { $gte: crr_time - min * 5 } })
+            { status: CONSTANT_STATUS_BOOKING.FINDING_DRIVER, time_start: { $lte: crr_time - min * 5 } })
             .populate('cus_id', 'device_token');
         let list_token = list_booking_finding.map(data => {
             return data.cus_id.device_token;
@@ -48,7 +48,7 @@ const job = schedule.scheduleJob('*/5 * * * *', async function () {
         }
 
         await Booking.updateMany(
-            { status: CONSTANT_STATUS_BOOKING.FINDING_DRIVER, time_start: { $gte: crr_time - min * 5 } },
+            { status: CONSTANT_STATUS_BOOKING.FINDING_DRIVER, time_start: { $lte: crr_time - min * 5 } },
             { status: CONSTANT_STATUS_BOOKING.USER_CANCEL, reason_cancel: 'Chuyến đi đã bị huỷ vì không có tài xế nào nhận chuyến' },
         )
     } catch (err) {
