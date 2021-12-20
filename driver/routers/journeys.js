@@ -322,12 +322,11 @@ Journey_router.post('/journey/accept/booking/freestate', auth, async (req, res) 
             pushNotificationTo_User(
                 [data_booking.cus_id.device_token],
                 'Đã có tài xế nhận chuyến', 'Hãy bấm vào đây để xem chi tiết chuyến xe',
-                JSON.stringify({
+                {
                     type: CONSTANT_NOTIFICATION.DRIVER_ACEEPT_BOOKING,
-                    journey_id: savedJourney._id,
+                    journey_id: savedJourney._id + '',
                     booking_id: booking_id
                 })
-                )
             res.status(200).send({ err: false, data: { data_booking: 'success', data_journeys: savedJourney } })
 
         })
