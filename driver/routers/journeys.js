@@ -321,7 +321,7 @@ Journey_router.post('/journey/accept/booking/freestate', auth, async (req, res) 
             const save_action = await Promise.all([promise_save_user, promise_save_booking, promise_save_trans, promise_save_trans_coupon])
             pushNotificationTo_User(
                 [data_booking.cus_id.device_token],
-                'Đã có tài xế nhận đón bạn', 'Hãy bấm vào đây để xem chi tiết chuyến xe',
+                'Đã có tài xế nhận chuyến', 'Hãy bấm vào đây để xem chi tiết chuyến xe',
                 {
                     type: CONSTANT_NOTIFICATION.DRIVER_ACEEPT_BOOKING,
                     journey_id: savedJourney._id,
@@ -438,7 +438,7 @@ Journey_router.post('/journey/accept/booking', auth, async (req, res) => {
             const save_action = await Promise.all([promise_save_user, promise_save_booking, promise_save_journey, promise_save_trans, promise_save_trans_coupon])
             pushNotificationTo_User(
                 [data_booking.cus_id.device_token],
-                'Đã có tài xế nhận đón bạn', 'Hãy bấm vào đây để xem chi tiết chuyến xe',
+                'Đã có tài xế nhận chuyến', 'Hãy bấm vào đây để xem chi tiết chuyến xe',
                 {
                     type: CONSTANT_NOTIFICATION.DRIVER_ACEEPT_BOOKING,
                     journey_id: journey_id,
