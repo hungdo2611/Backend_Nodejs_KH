@@ -146,8 +146,8 @@ Journey_router.post('/journey/dropoff/customer', authWithoutData, async (req, re
         })
         data_journeys.lst_pickup_point[index].isPick = 'drop';
         await data_journeys.save();
-        const titleNoti = data_booking.orderInfo ? 'Tài xế đã đến điểm giao hàng' : 'Chuyến đi đã kết thúc';
-        const contentNoti = data_booking.orderInfo ? 'Hãy chắc chắn là người nhận đã sẵn sáng nhận hàng nhé' : 'Bạn cảm thấy như thế nào'
+        const titleNoti = data_booking.orderInfo?.phone_take_order ? 'Tài xế đã đến điểm giao hàng' : 'Chuyến đi đã kết thúc';
+        const contentNoti = data_booking.orderInfo?.phone_take_order ? 'Hãy chắc chắn là người nhận đã sẵn sáng nhận hàng nhé' : 'Bạn cảm thấy như thế nào'
         pushNotificationTo_User(
             [data_booking.cus_id.device_token],
             titleNoti, contentNoti,
@@ -179,8 +179,8 @@ Journey_router.post('/journey/pickup/customer', authWithoutData, async (req, res
         })
         data_journeys.lst_pickup_point[index].isPick = true;
         await data_journeys.save();
-        const titleNoti = data_booking.orderInfo ? 'Tài xế đã đến lấy hàng' : 'Tài xế đã đến đón bạn';
-        const contentNoti = data_booking.orderInfo ? 'Hãy gửi hàng cho tài xế ngày nhé' : 'Hãy tận hưởng chuyến đi nhé ^^'
+        const titleNoti = data_booking.orderInfo?.phone_take_order ? 'Tài xế đã đến lấy hàng' : 'Tài xế đã đến đón bạn';
+        const contentNoti = data_booking.orderInfo?.phone_take_order ? 'Hãy gửi hàng cho tài xế ngày nhé' : 'Hãy tận hưởng chuyến đi nhé ^^'
         pushNotificationTo_User(
             [data_booking.cus_id.device_token],
             titleNoti, contentNoti,
