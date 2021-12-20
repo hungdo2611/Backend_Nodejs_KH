@@ -71,7 +71,7 @@ adminBanner.get('/admin/banner', authWithoutData, async (req, res) => {
             return
         } else {
             const notifications = await Banner.find();
-            await setRedisData(REDIS_KEY.NOTIFICATION_CUSTOMER, notifications);
+            await setRedisData(REDIS_KEY.BANNER_APP, notifications);
             res.status(200).send({ err: false, data: notifications })
             return
         }
@@ -90,7 +90,7 @@ adminBanner.get('/user/banner', userAuth.authWithoutData, async (req, res) => {
             return
         } else {
             const notifications = await Banner.find();
-            await setRedisData(REDIS_KEY.NOTIFICATION_CUSTOMER, notifications);
+            await setRedisData(REDIS_KEY.BANNER_APP, notifications);
             res.status(200).send({ err: false, data: notifications })
             return
         }
