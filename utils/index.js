@@ -14,6 +14,7 @@ client.on('connect', () => {
 });
 
 async function pushNotificationTo_User(lst, title, body, data) {
+    console.log('data send', data);
     if (lst && Array.isArray(lst)) {
         const send = await admin.messaging().sendMulticast({
             tokens: lst,
