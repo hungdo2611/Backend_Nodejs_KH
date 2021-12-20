@@ -99,7 +99,10 @@ const journeys_Schema = mongoose.Schema({
         info: {},
         isPick: {
         },
-        orderInfo: null
+        orderInfo: {
+            type: Object,
+            default: null
+        }
     }],
     price_shipping: [{
         distance: {
