@@ -6,7 +6,7 @@ const parsePhoneNumber = require('libphonenumber-js')
 const Customer = require('../../customer/models/user')
 const Booking = require('../../customer/models/booking')
 const { CONSTANT_STATUS_BOOKING, CONSTANT_NOTIFICATION } = require('../../constant')
-
+const { pushNotificationTo_User } = require('../../utils')
 const adminCustomer = express.Router()
 
 adminCustomer.get('/admin/customer', authWithoutData, async (req, res) => {
