@@ -58,6 +58,11 @@ const customer_Schema = mongoose.Schema({
         required: false,
         default: ""
     },
+    apple_id: {
+        type: String,
+        required: false,
+        default: ""
+    },
     avatar: {
         type: String,
         required: false,

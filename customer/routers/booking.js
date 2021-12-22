@@ -24,6 +24,11 @@ const schedule = require('node-schedule');
 // })
 
 // 
+
+
+
+
+
 const job = schedule.scheduleJob('*/5 * * * *', async function () {
     const crr_time = (Date.now() / 1000) >> 0;
     const min = 60;
@@ -377,7 +382,6 @@ routerBooking.post('/booking/near/user', authWithoutData, async (req, res) => {
                 },
             },
         };
-        let time = Date.now()
 
         const dataJourney = await Journeys.paginate({
             routes: {
@@ -392,7 +396,6 @@ routerBooking.post('/booking/near/user', authWithoutData, async (req, res) => {
             status: CONSTANT_STATUS_JOUNEYS.WAITING,
             time_end: { $gte: (Date.now() / 1000) >> 0 },
         }, { populate: { path: 'driver_id', select: "phone avatar name device_token" }, page: page_number, limit: page_size, forceCountFn: true });
-        console.log("respone time", (Date.now() - time) / 1000)
 
         res.status(200).send({ err: false, data: dataJourney.docs, total: dataJourney.totalDocs })
     } catch (error) {

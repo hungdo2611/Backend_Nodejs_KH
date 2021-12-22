@@ -6,6 +6,7 @@
   "license": "MIT",
   "dependencies": {
     "async-redis": "^2.0.0",
+    "axios": "^0.24.0",
     "bcryptjs": "^2.4.3",
     "bee-queue": "^1.4.0",
     "cors": "^2.8.5",
@@ -26,7 +27,8 @@
     "streamifier": "^0.1.1",
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.1.6",
-    "validator": "^13.6.0"
+    "validator": "^13.6.0",
+    "querystring": "^0.2.0"
   },
   "scripts": {
     "start": "env-cmd -f ./.env nodemon src/app.js"

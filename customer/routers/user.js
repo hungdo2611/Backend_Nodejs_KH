@@ -10,7 +10,10 @@ const mongoose = require('mongoose')
 const License = require('../../driver/models/license')
 const https = require('https');
 
-
+const jwt = require('jsonwebtoken');
+const fs = require('fs')
+const axios = require('axios')
+const querystring = require('querystring')
 
 const formatUser = (user) => {
     return {
@@ -40,6 +43,139 @@ const formatUser = (user) => {
  */
 
 
+const getClientSecret = () => {
+    // sign with RSA SHA256
+    const privateKey = fs.readFileSync('AuthKey_3L7NBT3P69.p8');
+    const headers = {
+        kid: '3L7NBT3P69',
+        typ: undefined // is there another way to remove type?
+    }
+    const claims = {
+        'iss': 'TL33VX6NK4',
+        'aud': 'https://appleid.apple.com',
+        'sub': 'com.hd.booking',
+    }
+
+    token = jwt.sign(claims, privateKey, {
+        algorithm: 'ES256',
+        header: headers,
+        expiresIn: '24h'
+    });
+
+    return token
+}
+
+const getUserId = (token) => {
+    const parts = token.split('.')
+    try {
+        return JSON.parse(new Buffer(parts[1], 'base64').toString('ascii'))
+    } catch (e) {
+        return null
+    }
+}
+const verifyAppleID = (code) => {
+    const clientSecret = getClientSecret();
+    console.log("clientSecret", clientSecret)
+    const requestBody = {
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: '',
+        client_id: 'com.hd.booking',
+        client_secret: clientSecret,
+        scope: "name email"
+    }
+    return new Promise(resolve => {
+        axios.request({
+            method: "POST",
+            url: "https://appleid.apple.com/auth/token",
+            data: querystring.stringify(requestBody),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        }).then(response => {
+            resolve({
+                user: getUserId(response.data.id_token),
+                verified: true,
+            })
+
+        }).catch(error => {
+            resolve({
+                user: null,
+                verified: false,
+                err: error?.response?.data?.error_description
+            })
+
+        })
+    })
+
+
+}
+// verify();
+customer_router.post('/users/login/apple', async (req, res) => {
+    try {
+        const { apple_id, authorization_code } = req.body;
+        let customer = await Customer.findOne({ apple_id: apple_id });
+        if (customer) {
+            const verify = await verifyAppleID(authorization_code);
+            if (!verify?.verified) {
+                res.status(200).send({ data: 'Cannot verify', err: true })
+                return
+            }
+            const token = await customer.generateAuthToken()
+            const responeDt = formatUser(customer);
+
+            res.status(200).send({ data: { ...responeDt, token }, token, err: false })
+        } else {
+            res.status(200).send({ data: 'Customer not found', err: true })
+        }
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send({ err: true, error })
+    }
+})
+
+customer_router.post('/users/register/apple', async (req, res) => {
+    try {
+        const { apple_id, phone, authorization_code, name, authtoken } = req.body
+        let isvalidate = isValidPhoneNumber(phone, 'VN');
+
+        if (!phone) {
+            res.status(404).send({ data: null, err: 'Missing Phone number' });
+            return
+        }
+
+        if (!isvalidate) {
+            res.status(404).send({ data: null, err: 'Phone number invalid' });
+            return
+        }
+        const verify = await verifyAppleID(authorization_code);
+        if (!verify?.verified) {
+            res.status(200).send({ data: 'Cannot verify', err: true })
+            return
+        }
+        const phoneNumber = parsePhoneNumber(phone, 'VN');
+
+        let verifyFirebase = await admin.auth().verifyIdToken(authtoken);
+
+        const bodyrequest = {
+            "_id": new mongoose.Types.ObjectId(),
+            phone: phoneNumber.number,
+            join_date: Date.now(),
+            is_active: true,
+            name: name ? name : 'Người dùng ẩn danh',
+            apple_id: apple_id,
+
+        }
+        const user = new Customer(bodyrequest)
+        await user.save()
+        const token = await user.generateAuthToken()
+        const responeDt = formatUser(user);
+
+        res.status(200).send({ data: { ...responeDt, token }, token, err: false })
+
+    } catch (error) {
+        console.log("error", error)
+        res.status(400).send({ err: true, error })
+    }
+})
 
 customer_router.post('/users/login/facebook', async (req, res) => {
     try {
