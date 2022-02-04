@@ -14,12 +14,12 @@ const geolib = require('geolib');
 const { request } = require('express')
 const Driver = require('../../driver/models/driver')
 const { pushNotificationTo_User } = require('../../utils/index')
-const { CONSTANT_NOTIFICATION, CONSTANT_STATUS_BOOKING, CONSTANT_STATUS_JOUNEYS, CONSTANT_TYPE_BOOKING } = require('../../constant/index')
+const { CONSTANT_NOTIFICATION, CONSTANT_STATUS_BOOKING, CONSTANT_STATUS_JOUNEYS, CONSTANT_TYPE_BOOKING, LIMIT_FILTER_DISTANCE } = require('../../constant/index')
 
 const Rating = require('../../driver/models/rating')
 const schedule = require('node-schedule');
 
-// Booking.deleteMany({}, (res) => {
+// Transaction.deleteMany({}, (res) => {
 //     console.log('res delete', res)
 // })
 
@@ -40,7 +40,7 @@ const job = schedule.scheduleJob('*/5 * * * *', async function () {
         let list_token = list_booking_finding.map(data => {
             return data.cus_id.device_token;
         })
-        console.log("list_token",list_token)
+        console.log("list_token", list_token)
 
         if (list_token.length > 0) {
             pushNotificationTo_User(
@@ -62,32 +62,15 @@ const job = schedule.scheduleJob('*/5 * * * *', async function () {
 });
 
 function getMinDistance(origin, route) {
-    let arrRoute = []
+    let arrRoute = [];
     route.forEach(data => {
-        arrRoute.push({ latitude: data.start_loc.lat, longitude: data.start_loc.lng });
-        arrRoute.push({ latitude: data.end_loc.lat, longitude: data.end_loc.lng });
+        arrRoute.push({ latitude: data[1], longitude: data[0] });
     })
     let nearestPoint = geolib.findNearest(origin, arrRoute);
-    let lstRouteNearest = route.filter(vl => {
-        return (vl.start_loc.lat == nearestPoint.latitude && vl.start_loc.lng == nearestPoint.longitude) || (vl.end_loc.lat == nearestPoint.latitude && vl.end_loc.lng == nearestPoint.longitude)
-    })
-    let minDistance;
-
-    lstRouteNearest.forEach(data => {
-        let distance = geolib.getDistanceFromLine(
-            origin,
-            { latitude: data.start_loc.lat, longitude: data.start_loc.lng },
-            { latitude: data.end_loc.lat, longitude: data.end_loc.lng },
-        );
-        if (minDistance) {
-            if (distance < minDistance) {
-                minDistance = distance
-            }
-        } else {
-            minDistance = distance
-        }
-    })
-    return minDistance
+    console.log("nearestPoint", nearestPoint)
+    console.log("origin", origin)
+    const distance = geolib.getDistance(origin, nearestPoint);
+    return distance
 
 }
 
@@ -261,29 +244,40 @@ routerBooking.post('/booking/finding/driver', authWithoutData, async (req, res) 
         };
         const crrTime = Date.now();
         const dataJourney = await Journeys.find({
-            routes: {
-                $nearSphere: {
-                    $geometry: {
-                        type: "Point",
-                        coordinates: body_booking.from.loc.coordinates
-                    },
-                    $maxDistance: 2000
-                }
-            },
+            // routes: {
+            //     $nearSphere: {
+            //         $geometry: {
+            //             type: "Point",
+            //             coordinates: body_booking.from.loc.coordinates
+            //         },
+            //         $maxDistance: 2000
+            //     }
+            // },
             routes: {
                 $nearSphere: {
                     $geometry: {
                         type: "Point",
                         coordinates: body_booking.to.loc.coordinates
                     },
-                    $maxDistance: 5000
+                    $maxDistance: LIMIT_FILTER_DISTANCE
                 }
             },
             journey_type: req.body.journey_type,
             allow_Customer: true,
             status: { $ne: CONSTANT_STATUS_JOUNEYS.END }
         }).populate('driver_id', "phone avatar name device_token ratingPoint license_plate verified_status vehicle_type").limit(20);
-        res.status(201).send({ err: false, data: dataJourney });
+        const data_filter_distance = dataJourney.filter(value => {
+            const distance = getMinDistance(
+                { latitude: body_booking.from.loc.coordinates[1], longitude: body_booking.from.loc.coordinates[0] },
+                value?.routes?.coordinates
+            )
+            if (distance <= LIMIT_FILTER_DISTANCE) {
+                return true
+            } else {
+                return false
+            }
+        })
+        res.status(201).send({ err: false, data: data_filter_distance });
     } catch (error) {
         console.log("error", error)
         res.status(400).send({ err: true, error })
@@ -303,7 +297,7 @@ routerBooking.post('/booking/free/driver', authWithoutData, async (req, res) => 
                             type: "Point",
                             coordinates: [from.lng, from.lat]
                         },
-                        $maxDistance: 5000
+                        $maxDistance: LIMIT_FILTER_DISTANCE
                     }
                 },
             },
@@ -340,18 +334,9 @@ routerBooking.post('/booking/finding/driver_delivery', authWithoutData, async (r
                 $nearSphere: {
                     $geometry: {
                         type: "Point",
-                        coordinates: body_booking.from.loc.coordinates
-                    },
-                    $maxDistance: 2000
-                }
-            },
-            routes: {
-                $nearSphere: {
-                    $geometry: {
-                        type: "Point",
                         coordinates: body_booking.to.loc.coordinates
                     },
-                    $maxDistance: 5000
+                    $maxDistance: LIMIT_FILTER_DISTANCE
                 }
             },
             time_end: { $gte: (Date.now() / 1000) >> 0 },
@@ -359,8 +344,19 @@ routerBooking.post('/booking/finding/driver_delivery', authWithoutData, async (r
             allow_Shipping: true,
             status: { $ne: CONSTANT_STATUS_JOUNEYS.END }
         }).populate('driver_id', "phone avatar name device_token ratingPoint license_plate verified_status vehicle_type").limit(20);
-        console.log('dataJourney', dataJourney)
-        res.status(201).send({ err: false, data: dataJourney });
+
+        const data_filter_distance = dataJourney.filter(value => {
+            const distance = getMinDistance(
+                { latitude: body_booking.from.loc.coordinates[1], longitude: body_booking.from.loc.coordinates[0] },
+                value?.routes?.coordinates
+            )
+            if (distance <= LIMIT_FILTER_DISTANCE) {
+                return true
+            } else {
+                return false
+            }
+        })
+        res.status(201).send({ err: false, data: data_filter_distance });
     } catch (error) {
         console.log("error", error)
         res.status(400).send({ err: true, error })
